@@ -45,6 +45,15 @@ class _SplashScreenState extends State<SplashScreen> {
             ),
             const SizedBox(height: 10),
             const CircularProgressIndicator(color: Colors.white),
+
+            const Text(
+              "by Rayhan Fajri A",
+              style: TextStyle(
+                fontSize: 16,
+                fontStyle: FontStyle.italic,
+                color: Colors.white70,
+              ),
+            ),
           ],
         ),
       ),

@@ -87,12 +87,9 @@ class _StokObatState extends State<StokObat> {
                       child: ListTile(
                         leading: CircleAvatar(
                           radius: 28,
-                          backgroundImage: AssetImage(
-                            obat.foto,
-                          ), // ✅ tampilkan foto obat
-                          onBackgroundImageError: (_, __) => const Icon(
-                            Icons.medication,
-                          ), // fallback kalau gambar error
+                          backgroundImage: AssetImage(obat.foto),
+                          onBackgroundImageError: (_, __) =>
+                              const Icon(Icons.medication),
                         ),
                         title: Text(
                           obat.namaObat,
@@ -105,6 +102,49 @@ class _StokObatState extends State<StokObat> {
                           "Kategori: ${obat.namaKategori}\nStok: ${obat.stok}\nHarga: Rp ${obat.harga}",
                           style: TextStyle(color: Colors.grey.shade700),
                         ),
+                        onTap: () {
+                          showDialog(
+                            context: context,
+                            builder: (context) => AlertDialog(
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                              title: Text(
+                                obat.namaObat,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.teal,
+                                ),
+                              ),
+                              content: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Center(
+                                    child: CircleAvatar(
+                                      radius: 40,
+                                      backgroundImage: AssetImage(obat.foto),
+                                      onBackgroundImageError: (_, __) =>
+                                          const Icon(Icons.medication),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 12),
+                                  Text("Kode Obat   : ${obat.kodeObat}"),
+                                  Text("Kategori    : ${obat.namaKategori}"),
+                                  Text("Deskripsi   : ${obat.deskripsi}"),
+                                  Text("Harga       : Rp ${obat.harga}"),
+                                  Text("Stok        : ${obat.stok}"),
+                                ],
+                              ),
+                              actions: [
+                                TextButton(
+                                  onPressed: () => Navigator.pop(context),
+                                  child: const Text("Tutup"),
+                                ),
+                              ],
+                            ),
+                          );
+                        },
                         trailing: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [

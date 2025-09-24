@@ -90,6 +90,9 @@ class _PenjualanObatState extends State<PenjualanObat> {
                           "Jumlah: ${item.jumlah}\nTanggal: ${item.tanggal}",
                           style: TextStyle(color: Colors.grey.shade700),
                         ),
+                        onTap: () {
+                          _showDetailDialog(context, item);
+                        },
                         trailing: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
@@ -139,6 +142,34 @@ class _PenjualanObatState extends State<PenjualanObat> {
                 ),
               ),
             ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showDetailDialog(BuildContext context, Penjualan item) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text(
+          "Detail Penjualan",
+          style: TextStyle(color: Colors.teal),
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text("Nama Obat: ${item.namaObat}"),
+            Text("Jumlah: ${item.jumlah}"),
+            Text("Tanggal: ${item.tanggal}"),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Tutup"),
           ),
         ],
       ),
