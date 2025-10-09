@@ -141,8 +141,10 @@ class _RegisState extends State<Regis> {
         ),
         TextField(
           controller: _emailController,
+          style: const TextStyle(color: Colors.white),
           decoration: InputDecoration(
             hintText: hintText,
+            hintStyle: const TextStyle(color: Colors.white),
             border: const OutlineInputBorder(),
           ),
         ),
@@ -165,8 +167,10 @@ class _RegisState extends State<Regis> {
         TextField(
           controller: _passwordController,
           obscureText: !_isPasswordVisible,
+          style: const TextStyle(color: Colors.white),
           decoration: InputDecoration(
             hintText: "Masukkan Password",
+            hintStyle: const TextStyle(color: Colors.white),
             border: const OutlineInputBorder(),
             suffixIcon: IconButton(
               icon: Icon(
@@ -200,8 +204,10 @@ class _RegisState extends State<Regis> {
         TextField(
           controller: _confirmPasswordController,
           obscureText: !_isConfirmPasswordVisible,
+          style: const TextStyle(color: Colors.white),
           decoration: InputDecoration(
             hintText: "Masukkan Ulang Password",
+            hintStyle: const TextStyle(color: Colors.white),
             border: const OutlineInputBorder(),
             suffixIcon: IconButton(
               icon: Icon(

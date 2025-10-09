@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:adaptive_theme/adaptive_theme.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:avatars/avatars.dart';
-import 'package:shared_preferences/shared_preferences.dart'; // ⬅️ Tambahan
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'login.dart';
 import 'home_page.dart';
@@ -26,20 +26,20 @@ class _DashboardState extends State<Dashboard> {
   late List<Penjualan> penjualan;
   late List<Obat> stok;
   double _rating = 3.5;
+  String? _lastLogin;
 
   @override
   void initState() {
     super.initState();
     penjualan = List<Penjualan>.from(penjualanList);
     stok = List<Obat>.from(stokObatList);
-    _loadSavedTheme(); // ⬅️ Tambahan: cek tema yang terakhir disimpan
+    _loadSavedTheme();
+    _loadLastLogin();
   }
 
-  // 🔹 Fungsi buat ambil tema dari SharedPreferences
   Future<void> _loadSavedTheme() async {
     final prefs = await SharedPreferences.getInstance();
     final savedTheme = prefs.getString('selectedTheme');
-
     if (savedTheme == 'light') {
       AdaptiveTheme.of(context).setLight();
     } else if (savedTheme == 'dark') {
@@ -49,10 +49,16 @@ class _DashboardState extends State<Dashboard> {
     }
   }
 
-  // 🔹 Fungsi buat simpan tema ke SharedPreferences
   Future<void> _saveTheme(String themeMode) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('selectedTheme', themeMode);
+  }
+
+  Future<void> _loadLastLogin() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _lastLogin = prefs.getString('last_login');
+    });
   }
 
   @override
@@ -103,8 +109,6 @@ class _DashboardState extends State<Dashboard> {
           centerTitle: true,
         ),
       ),
-
-      // === Sidebar Drawer ===
       drawer: Drawer(
         child: Column(
           children: [
@@ -119,7 +123,6 @@ class _DashboardState extends State<Dashboard> {
                 color: Theme.of(context).colorScheme.primary,
               ),
             ),
-
             ListTile(
               leading: const Icon(Icons.edit),
               title: const Text("Edit Profil"),
@@ -140,8 +143,6 @@ class _DashboardState extends State<Dashboard> {
                 );
               },
             ),
-
-            // === Pilihan Tema ===
             ExpansionTile(
               leading: const Icon(Icons.brightness_6),
               title: const Text("Tema"),
@@ -150,7 +151,7 @@ class _DashboardState extends State<Dashboard> {
                   title: const Text("Terang"),
                   onTap: () {
                     AdaptiveTheme.of(context).setLight();
-                    _saveTheme('light'); // ⬅️ Simpan pilihan
+                    _saveTheme('light');
                     Navigator.pop(context);
                   },
                 ),
@@ -158,7 +159,7 @@ class _DashboardState extends State<Dashboard> {
                   title: const Text("Gelap"),
                   onTap: () {
                     AdaptiveTheme.of(context).setDark();
-                    _saveTheme('dark'); // ⬅️ Simpan pilihan
+                    _saveTheme('dark');
                     Navigator.pop(context);
                   },
                 ),
@@ -166,16 +167,13 @@ class _DashboardState extends State<Dashboard> {
                   title: const Text("Ikuti Sistem"),
                   onTap: () {
                     AdaptiveTheme.of(context).setSystem();
-                    _saveTheme('system'); // ⬅️ Simpan pilihan
+                    _saveTheme('system');
                     Navigator.pop(context);
                   },
                 ),
               ],
             ),
-
             const Spacer(),
-
-            // ⭐ Rating
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
               child: Column(
@@ -205,10 +203,21 @@ class _DashboardState extends State<Dashboard> {
                       );
                     },
                   ),
+                  const SizedBox(height: 16),
+                  const Text(
+                    "Terakhir Login:",
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    _lastLogin != null
+                        ? "Waktu: $_lastLogin"
+                        : "Belum pernah login",
+                    style: const TextStyle(fontSize: 16),
+                  ),
                 ],
               ),
             ),
-
             ListTile(
               leading: Icon(
                 Icons.logout,
@@ -228,9 +237,7 @@ class _DashboardState extends State<Dashboard> {
           ],
         ),
       ),
-
       body: IndexedStack(index: myIndex, children: pages),
-
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
           color: Theme.of(context).colorScheme.surface,

@@ -1,10 +1,11 @@
-import 'dart:ui'; // ini tambahan buat efek blur
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 import 'package:chewie/chewie.dart';
 import 'dashboard.dart';
 import 'regis.dart';
 import '/model/user.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class Login extends StatefulWidget {
   const Login({super.key});
@@ -46,6 +47,12 @@ class _LoginState extends State<Login> {
     _videoController.dispose();
     _chewieController?.dispose();
     super.dispose();
+  }
+
+  Future<void> saveLastLogin() async {
+    final prefs = await SharedPreferences.getInstance();
+    final now = DateTime.now().toIso8601String();
+    await prefs.setString('last_login', now);
   }
 
   @override
@@ -139,8 +146,10 @@ class _LoginState extends State<Login> {
         TextField(
           controller: _passwordController,
           obscureText: !_isPasswordVisible,
+          style: const TextStyle(color: Colors.white),
           decoration: InputDecoration(
             hintText: "Masukkan Password",
+            hintStyle: const TextStyle(color: Colors.white),
             border: const OutlineInputBorder(),
             suffixIcon: IconButton(
               icon: Icon(
@@ -174,8 +183,10 @@ class _LoginState extends State<Login> {
         TextField(
           controller: _emailController,
           obscureText: isPassword,
+          style: const TextStyle(color: Colors.white),
           decoration: InputDecoration(
             hintText: hintText,
+            hintStyle: const TextStyle(color: Colors.white),
             border: const OutlineInputBorder(),
           ),
         ),
@@ -189,7 +200,7 @@ class _LoginState extends State<Login> {
       height: 50,
       child: ElevatedButton(
         style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
-        onPressed: () {
+        onPressed: () async {
           String email = _emailController.text.trim();
           String password = _passwordController.text.trim();
 
@@ -211,6 +222,8 @@ class _LoginState extends State<Login> {
           }
 
           user.login();
+
+          await saveLastLogin();
 
           Navigator.pushReplacement(
             context,
