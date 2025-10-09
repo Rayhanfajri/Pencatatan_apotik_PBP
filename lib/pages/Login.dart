@@ -1,8 +1,9 @@
+import 'dart:ui'; // ini tambahan buat efek blur
 import 'package:flutter/material.dart';
-import 'package:animated_background/animated_background.dart';
+import 'package:video_player/video_player.dart';
+import 'package:chewie/chewie.dart';
 import 'dashboard.dart';
 import 'regis.dart';
-//import 'home2.dart'
 import '/model/user.dart';
 
 class Login extends StatefulWidget {
@@ -12,82 +13,113 @@ class Login extends StatefulWidget {
   State<Login> createState() => _LoginState();
 }
 
-class _LoginState extends State<Login> with TickerProviderStateMixin {
+class _LoginState extends State<Login> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   bool _isPasswordVisible = false;
 
+  late VideoPlayerController _videoController;
+  ChewieController? _chewieController;
+
+  @override
+  void initState() {
+    super.initState();
+    _videoController =
+        VideoPlayerController.asset("assets/videos/background.mp4")
+          ..setLooping(true)
+          ..setVolume(0)
+          ..initialize().then((_) {
+            setState(() {
+              _chewieController = ChewieController(
+                videoPlayerController: _videoController,
+                aspectRatio: _videoController.value.aspectRatio,
+                autoPlay: true,
+                looping: true,
+                showControls: false,
+              );
+            });
+          });
+  }
+
+  @override
+  void dispose() {
+    _videoController.dispose();
+    _chewieController?.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(color: Color(0xFF30C963)),
-        child: AnimatedBackground(
-          behaviour: RandomParticleBehaviour(
-            options: ParticleOptions(
-              baseColor: Color(0xFFFDFEFF),
-              spawnOpacity: 0.4,
-              opacityChangeRate: 0.25,
-              minOpacity: 0.1,
-              maxOpacity: 0.6,
-              particleCount: 40,
-              spawnMinSpeed: 20.0,
-              spawnMaxSpeed: 70.0,
-              spawnMinRadius: 2.0,
-              spawnMaxRadius: 6.0,
-            ),
-          ),
-          vsync: this,
-          child: Center(
+      body: Stack(
+        children: [
+          // Background Video
+          if (_chewieController != null && _videoController.value.isInitialized)
+            Positioned.fill(
+              child: FittedBox(
+                fit: BoxFit.cover,
+                child: SizedBox(
+                  width: _videoController.value.size.width,
+                  height: _videoController.value.size.height,
+                  child: Chewie(controller: _chewieController!),
+                ),
+              ),
+            )
+          else
+            Container(color: Colors.black),
+
+          Container(color: Colors.black.withOpacity(0.6)),
+
+          Center(
             child: SingleChildScrollView(
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 600),
-                child: Card(
-                  color: Colors.white.withOpacity(0.9),
-                  elevation: 10,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  margin: const EdgeInsets.all(24),
-                  child: Padding(
-                    padding: const EdgeInsets.all(24),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const SizedBox(height: 30),
-                        _logo(),
-                        const SizedBox(height: 10),
-                        const Text(
-                          "Pencatatan Apotik",
-                          style: TextStyle(
-                            fontSize: 28,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.green,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(20),
+                  child: BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                    child: Container(
+                      color: Colors.white.withOpacity(0.25),
+                      padding: const EdgeInsets.all(24),
+                      margin: const EdgeInsets.all(24),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const SizedBox(height: 30),
+                          _logo(),
+                          const SizedBox(height: 10),
+                          const Text(
+                            "Pencatatan Apotik",
+                            style: TextStyle(
+                              fontSize: 28,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.green,
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: 30),
-                        _loginForm(),
-                        const SizedBox(height: 30),
-                        _emailInput("Email", "Masukkan Email", false),
-                        const SizedBox(height: 30),
-                        _passwordInput(),
-                        _forgotPasswordBtn(context),
-                        const SizedBox(height: 30),
-                        _loginBtn(context),
-                        const SizedBox(height: 30),
-                        _daftarBtn(
-                          context,
-                          "Belum Punya Akun? Daftar",
-                          Colors.black,
-                        ),
-                      ],
+                          const SizedBox(height: 30),
+                          _loginForm(),
+                          const SizedBox(height: 30),
+                          _emailInput("Email", "Masukkan Email", false),
+                          const SizedBox(height: 30),
+                          _passwordInput(),
+                          _forgotPasswordBtn(context),
+                          const SizedBox(height: 30),
+                          _loginBtn(context),
+                          const SizedBox(height: 30),
+                          _daftarBtn(
+                            context,
+                            "Belum Punya Akun? Daftar",
+                            Colors.white,
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
               ),
             ),
           ),
-        ),
+        ],
       ),
     );
   }
@@ -100,7 +132,7 @@ class _LoginState extends State<Login> with TickerProviderStateMixin {
           "Password",
           style: TextStyle(
             fontSize: 18,
-            color: Colors.black,
+            color: Colors.white,
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -113,7 +145,7 @@ class _LoginState extends State<Login> with TickerProviderStateMixin {
             suffixIcon: IconButton(
               icon: Icon(
                 _isPasswordVisible ? Icons.visibility : Icons.visibility_off,
-                color: Colors.black,
+                color: Colors.white,
               ),
               onPressed: () {
                 setState(() {
@@ -135,7 +167,7 @@ class _LoginState extends State<Login> with TickerProviderStateMixin {
           label,
           style: const TextStyle(
             fontSize: 18,
-            color: Colors.black,
+            color: Colors.white,
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -184,7 +216,6 @@ class _LoginState extends State<Login> with TickerProviderStateMixin {
             context,
             MaterialPageRoute(
               builder: (context) => Dashboard(email: user.username),
-              //builder: (context) => Home2(),
             ),
           );
         },
@@ -192,7 +223,7 @@ class _LoginState extends State<Login> with TickerProviderStateMixin {
           'Login',
           style: TextStyle(
             fontSize: 18,
-            color: Colors.black,
+            color: Colors.white,
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -228,7 +259,7 @@ class _LoginState extends State<Login> with TickerProviderStateMixin {
         child: const Text(
           "Lupa Password?",
           style: TextStyle(
-            color: Colors.black,
+            color: Colors.white,
             fontWeight: FontWeight.bold,
             decoration: TextDecoration.underline,
           ),
@@ -249,7 +280,7 @@ class _LoginState extends State<Login> with TickerProviderStateMixin {
         "Login",
         style: TextStyle(
           fontSize: 26,
-          color: Colors.black,
+          color: Colors.white,
           fontWeight: FontWeight.bold,
         ),
       ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:getwidget/getwidget.dart';
 import '/model/obat.dart';
 import '/model/kategoriobat.dart';
 
@@ -35,182 +36,156 @@ class _StokObatState extends State<StokObat> {
     return Container(
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [Colors.teal.shade100, Colors.white],
+          colors: [Colors.teal.shade50, Colors.white],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
       ),
-      child: Stack(
+      child: Column(
         children: [
-          Positioned(
-            top: -50,
-            left: -30,
-            child: Container(
-              width: 150,
-              height: 150,
-              decoration: BoxDecoration(
-                color: Colors.teal.withOpacity(0.1),
-                shape: BoxShape.circle,
+          Expanded(
+            child: GridView.builder(
+              padding: const EdgeInsets.all(12),
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 4,
+                childAspectRatio: 1.1, // biar lebih kotak
+                crossAxisSpacing: 8,
+                mainAxisSpacing: 8,
               ),
-            ),
-          ),
-          Positioned(
-            bottom: -60,
-            right: -40,
-            child: Container(
-              width: 200,
-              height: 200,
-              decoration: BoxDecoration(
-                color: Colors.teal.withOpacity(0.15),
-                shape: BoxShape.circle,
-              ),
-            ),
-          ),
-
-          Column(
-            children: [
-              Expanded(
-                child: ListView.builder(
-                  itemCount: _stok.length,
-                  itemBuilder: (context, index) {
-                    final obat = _stok[index];
-                    return Card(
-                      color: Colors.white,
-                      elevation: 4,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      margin: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 6,
-                      ),
-                      child: ListTile(
-                        leading: CircleAvatar(
-                          radius: 28,
+              itemCount: _stok.length,
+              itemBuilder: (context, index) {
+                final obat = _stok[index];
+                return GestureDetector(
+                  onTap: () => _showDetailBottomSheet(context, index, obat),
+                  child: GFCard(
+                    color: Colors.white,
+                    elevation: 2,
+                    borderRadius: BorderRadius.circular(12),
+                    padding: const EdgeInsets.all(10),
+                    content: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        GFAvatar(
                           backgroundImage: AssetImage(obat.foto),
-                          onBackgroundImageError: (_, __) =>
-                              const Icon(Icons.medication),
+                          shape: GFAvatarShape.circle,
+                          size: 48,
                         ),
-                        title: Text(
+                        const SizedBox(height: 3),
+                        Text(
                           obat.namaObat,
                           style: const TextStyle(
                             fontWeight: FontWeight.bold,
+                            fontSize: 18,
                             color: Colors.teal,
                           ),
+                          textAlign: TextAlign.center,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
-                        subtitle: Text(
-                          "Kategori: ${obat.namaKategori}\nStok: ${obat.stok}\nHarga: Rp ${obat.harga}",
-                          style: TextStyle(color: Colors.grey.shade700),
+                        const SizedBox(height: 2),
+                        Text(
+                          "Rp ${obat.harga.toStringAsFixed(0)}",
+                          style: const TextStyle(
+                            fontSize: 16,
+                            color: Colors.green,
+                            fontWeight: FontWeight.w500,
+                          ),
                         ),
-                        onTap: () {
-                          showDialog(
-                            context: context,
-                            builder: (context) => AlertDialog(
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(16),
-                              ),
-                              title: Text(
-                                obat.namaObat,
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.teal,
-                                ),
-                              ),
-                              content: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Center(
-                                    child: CircleAvatar(
-                                      radius: 40,
-                                      backgroundImage: AssetImage(obat.foto),
-                                      onBackgroundImageError: (_, __) =>
-                                          const Icon(Icons.medication),
-                                    ),
-                                  ),
-                                  const SizedBox(height: 12),
-                                  Text("Kode Obat   : ${obat.kodeObat}"),
-                                  Text("Kategori    : ${obat.namaKategori}"),
-                                  Text("Deskripsi   : ${obat.deskripsi}"),
-                                  Text("Harga       : Rp ${obat.harga}"),
-                                  Text("Stok        : ${obat.stok}"),
-                                ],
-                              ),
-                              actions: [
-                                TextButton(
-                                  onPressed: () => Navigator.pop(context),
-                                  child: const Text("Tutup"),
-                                ),
-                              ],
-                            ),
-                          );
-                        },
-                        trailing: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            IconButton(
-                              icon: const Icon(Icons.edit, color: Colors.blue),
-                              onPressed: () {
-                                _showEditDialog(context, index, obat);
-                              },
-                            ),
-                            IconButton(
-                              icon: const Icon(Icons.delete, color: Colors.red),
-                              onPressed: () {
-                                final updated = List<Obat>.from(_stok);
-                                updated.removeAt(index);
-                                stok = updated;
-                              },
-                            ),
-                          ],
+                        const SizedBox(height: 2),
+                        Text(
+                          "Stok: ${obat.stok}",
+                          style: const TextStyle(
+                            fontSize: 15,
+                            color: Colors.black54,
+                          ),
                         ),
-                      ),
-                    );
-                  },
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(12.0),
-                child: ElevatedButton.icon(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.teal,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(
-                      vertical: 14,
-                      horizontal: 24,
+                      ],
                     ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    elevation: 6,
                   ),
-                  icon: const Icon(Icons.add),
-                  label: const Text(
-                    "Tambah Stok Obat",
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                  ),
-                  onPressed: () {
-                    _showAddDialog(context);
-                  },
-                ),
-              ),
-            ],
+                );
+              },
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(12.0),
+            child: GFButton(
+              onPressed: () => _showAddDialog(context),
+              text: "Tambah Stok Obat",
+              icon: const Icon(Icons.add, color: Colors.white),
+              color: Colors.teal,
+              size: GFSize.LARGE,
+              shape: GFButtonShape.pills,
+              blockButton: true,
+            ),
           ),
         ],
       ),
     );
   }
 
+  void _showDetailBottomSheet(BuildContext context, int index, Obat obat) {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (_) => Container(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            GFAvatar(
+              backgroundImage: AssetImage(obat.foto),
+              shape: GFAvatarShape.circle,
+              size: 80,
+            ),
+            const SizedBox(height: 10),
+            Text(
+              obat.namaObat,
+              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 5),
+            Text("Kode: ${obat.kodeObat}"),
+            Text("Kategori: ${obat.namaKategori}"),
+            Text("Harga: Rp ${obat.harga.toStringAsFixed(0)}"),
+            Text("Stok: ${obat.stok}"),
+            const SizedBox(height: 20),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                GFButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    _showEditDialog(context, index, obat);
+                  },
+                  text: "Edit",
+                  color: Colors.blue,
+                  shape: GFButtonShape.pills,
+                ),
+                GFButton(
+                  onPressed: () {
+                    final updated = List<Obat>.from(_stok);
+                    updated.removeAt(index);
+                    stok = updated;
+                    Navigator.pop(context);
+                  },
+                  text: "Hapus",
+                  color: Colors.red,
+                  shape: GFButtonShape.pills,
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // 🔽 Dialog Edit
   void _showEditDialog(BuildContext context, int index, Obat obat) {
-    final TextEditingController namaController = TextEditingController(
-      text: obat.namaObat,
-    );
-    final TextEditingController stokController = TextEditingController(
-      text: obat.stok.toString(),
-    );
-    final TextEditingController hargaController = TextEditingController(
-      text: obat.harga.toString(),
-    );
+    final namaController = TextEditingController(text: obat.namaObat);
+    final stokController = TextEditingController(text: obat.stok.toString());
+    final hargaController = TextEditingController(text: obat.harga.toString());
 
     KategoriObat? selectedKategori = kategoriList.firstWhere(
       (kat) => kat.idKategori == obat.idKategori,
@@ -221,54 +196,45 @@ class _StokObatState extends State<StokObat> {
       context: context,
       builder: (context) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text(
-          "Edit Stok Obat",
-          style: TextStyle(color: Colors.teal),
-        ),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: namaController,
-                decoration: const InputDecoration(labelText: "Nama Obat"),
-              ),
-              TextField(
-                controller: stokController,
-                keyboardType: TextInputType.number,
-                decoration: const InputDecoration(labelText: "Jumlah Stok"),
-              ),
-              TextField(
-                controller: hargaController,
-                keyboardType: TextInputType.number,
-                decoration: const InputDecoration(labelText: "Harga"),
-              ),
-              const SizedBox(height: 10),
-              DropdownButtonFormField<KategoriObat>(
-                value: selectedKategori,
-                decoration: const InputDecoration(labelText: "Kategori"),
-                items: kategoriList.map((kat) {
-                  return DropdownMenuItem(
-                    value: kat,
-                    child: Text(kat.namaKategori),
-                  );
-                }).toList(),
-                onChanged: (value) {
-                  setState(() {
-                    selectedKategori = value;
-                  });
-                },
-              ),
-            ],
-          ),
+        title: const Text("Edit Stok Obat"),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: namaController,
+              decoration: const InputDecoration(labelText: "Nama Obat"),
+            ),
+            TextField(
+              controller: stokController,
+              keyboardType: TextInputType.number,
+              decoration: const InputDecoration(labelText: "Jumlah Stok"),
+            ),
+            TextField(
+              controller: hargaController,
+              keyboardType: TextInputType.number,
+              decoration: const InputDecoration(labelText: "Harga"),
+            ),
+            DropdownButtonFormField<KategoriObat>(
+              value: selectedKategori,
+              decoration: const InputDecoration(labelText: "Kategori"),
+              items: kategoriList.map((kat) {
+                return DropdownMenuItem(
+                  value: kat,
+                  child: Text(kat.namaKategori),
+                );
+              }).toList(),
+              onChanged: (value) => setState(() => selectedKategori = value),
+            ),
+          ],
         ),
         actions: [
-          TextButton(
+          GFButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text("Batal"),
+            text: "Batal",
+            type: GFButtonType.outline,
+            color: Colors.red,
           ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.teal),
+          GFButton(
             onPressed: () {
               final updated = List<Obat>.from(_stok);
               updated[index] = Obat(
@@ -284,17 +250,19 @@ class _StokObatState extends State<StokObat> {
               stok = updated;
               Navigator.pop(context);
             },
-            child: const Text("Simpan"),
+            text: "Simpan",
+            color: Colors.teal,
           ),
         ],
       ),
     );
   }
 
+  // 🔽 Dialog Tambah
   void _showAddDialog(BuildContext context) {
-    final TextEditingController namaController = TextEditingController();
-    final TextEditingController stokController = TextEditingController();
-    final TextEditingController hargaController = TextEditingController();
+    final namaController = TextEditingController();
+    final stokController = TextEditingController();
+    final hargaController = TextEditingController();
 
     KategoriObat? selectedKategori = kategoriList.first;
 
@@ -302,54 +270,45 @@ class _StokObatState extends State<StokObat> {
       context: context,
       builder: (context) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text(
-          "Tambah Stok Obat",
-          style: TextStyle(color: Colors.teal),
-        ),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: namaController,
-                decoration: const InputDecoration(labelText: "Nama Obat"),
-              ),
-              TextField(
-                controller: stokController,
-                keyboardType: TextInputType.number,
-                decoration: const InputDecoration(labelText: "Jumlah Stok"),
-              ),
-              TextField(
-                controller: hargaController,
-                keyboardType: TextInputType.number,
-                decoration: const InputDecoration(labelText: "Harga"),
-              ),
-              const SizedBox(height: 10),
-              DropdownButtonFormField<KategoriObat>(
-                value: selectedKategori,
-                decoration: const InputDecoration(labelText: "Kategori"),
-                items: kategoriList.map((kat) {
-                  return DropdownMenuItem(
-                    value: kat,
-                    child: Text(kat.namaKategori),
-                  );
-                }).toList(),
-                onChanged: (value) {
-                  setState(() {
-                    selectedKategori = value;
-                  });
-                },
-              ),
-            ],
-          ),
+        title: const Text("Tambah Stok Obat"),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: namaController,
+              decoration: const InputDecoration(labelText: "Nama Obat"),
+            ),
+            TextField(
+              controller: stokController,
+              keyboardType: TextInputType.number,
+              decoration: const InputDecoration(labelText: "Jumlah Stok"),
+            ),
+            TextField(
+              controller: hargaController,
+              keyboardType: TextInputType.number,
+              decoration: const InputDecoration(labelText: "Harga"),
+            ),
+            DropdownButtonFormField<KategoriObat>(
+              value: selectedKategori,
+              decoration: const InputDecoration(labelText: "Kategori"),
+              items: kategoriList.map((kat) {
+                return DropdownMenuItem(
+                  value: kat,
+                  child: Text(kat.namaKategori),
+                );
+              }).toList(),
+              onChanged: (value) => setState(() => selectedKategori = value),
+            ),
+          ],
         ),
         actions: [
-          TextButton(
+          GFButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text("Batal"),
+            text: "Batal",
+            type: GFButtonType.outline,
+            color: Colors.red,
           ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.teal),
+          GFButton(
             onPressed: () {
               if (namaController.text.isNotEmpty &&
                   stokController.text.isNotEmpty &&
@@ -372,7 +331,8 @@ class _StokObatState extends State<StokObat> {
                 Navigator.pop(context);
               }
             },
-            child: const Text("Tambah"),
+            text: "Tambah",
+            color: Colors.teal,
           ),
         ],
       ),

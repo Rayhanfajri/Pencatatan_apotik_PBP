@@ -1,4 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:adaptive_theme/adaptive_theme.dart';
+import 'package:flutter_rating_bar/flutter_rating_bar.dart';
+import 'package:avatars/avatars.dart';
+import 'package:shared_preferences/shared_preferences.dart'; // ⬅️ Tambahan
+
 import 'login.dart';
 import 'home_page.dart';
 import 'penjualan_obat.dart';
@@ -17,17 +22,37 @@ class Dashboard extends StatefulWidget {
 
 class _DashboardState extends State<Dashboard> {
   int myIndex = 0;
-
   final List<String> titles = ["Home", "Data Penjualan", "Cek Stok"];
-
   late List<Penjualan> penjualan;
   late List<Obat> stok;
+  double _rating = 3.5;
 
   @override
   void initState() {
     super.initState();
     penjualan = List<Penjualan>.from(penjualanList);
     stok = List<Obat>.from(stokObatList);
+    _loadSavedTheme(); // ⬅️ Tambahan: cek tema yang terakhir disimpan
+  }
+
+  // 🔹 Fungsi buat ambil tema dari SharedPreferences
+  Future<void> _loadSavedTheme() async {
+    final prefs = await SharedPreferences.getInstance();
+    final savedTheme = prefs.getString('selectedTheme');
+
+    if (savedTheme == 'light') {
+      AdaptiveTheme.of(context).setLight();
+    } else if (savedTheme == 'dark') {
+      AdaptiveTheme.of(context).setDark();
+    } else if (savedTheme == 'system') {
+      AdaptiveTheme.of(context).setSystem();
+    }
+  }
+
+  // 🔹 Fungsi buat simpan tema ke SharedPreferences
+  Future<void> _saveTheme(String themeMode) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('selectedTheme', themeMode);
   }
 
   @override
@@ -66,38 +91,139 @@ class _DashboardState extends State<Dashboard> {
         preferredSize: const Size.fromHeight(65),
         child: AppBar(
           elevation: 4,
-          backgroundColor: Colors.teal,
           shape: const RoundedRectangleBorder(
             borderRadius: BorderRadius.vertical(bottom: Radius.circular(20)),
           ),
           title: Text(
             titles[myIndex],
-            style: const TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-            ),
+            style: Theme.of(
+              context,
+            ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
           ),
-          actions: [
-            Row(
+          centerTitle: true,
+        ),
+      ),
+
+      // === Sidebar Drawer ===
+      drawer: Drawer(
+        child: Column(
+          children: [
+            UserAccountsDrawerHeader(
+              accountName: const Text("User"),
+              accountEmail: Text(widget.email),
+              currentAccountPicture: Avatar(
+                name: "User",
+                shape: AvatarShape.circle(50),
+              ),
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.primary,
+              ),
+            ),
+
+            ListTile(
+              leading: const Icon(Icons.edit),
+              title: const Text("Edit Profil"),
+              onTap: () {
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text("Menu Edit Profil dipilih")),
+                );
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.settings),
+              title: const Text("Pengaturan"),
+              onTap: () {
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text("Menu Pengaturan dipilih")),
+                );
+              },
+            ),
+
+            // === Pilihan Tema ===
+            ExpansionTile(
+              leading: const Icon(Icons.brightness_6),
+              title: const Text("Tema"),
               children: [
-                const Icon(Icons.person, color: Colors.white),
-                const SizedBox(width: 6),
-                Text(
-                  "Selamat datang, ${widget.email}",
-                  style: const TextStyle(color: Colors.white, fontSize: 14),
+                ListTile(
+                  title: const Text("Terang"),
+                  onTap: () {
+                    AdaptiveTheme.of(context).setLight();
+                    _saveTheme('light'); // ⬅️ Simpan pilihan
+                    Navigator.pop(context);
+                  },
                 ),
-                const SizedBox(width: 12),
-                IconButton(
-                  icon: const Icon(Icons.logout, color: Colors.white),
-                  onPressed: () {
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(builder: (context) => const Login()),
-                    );
+                ListTile(
+                  title: const Text("Gelap"),
+                  onTap: () {
+                    AdaptiveTheme.of(context).setDark();
+                    _saveTheme('dark'); // ⬅️ Simpan pilihan
+                    Navigator.pop(context);
+                  },
+                ),
+                ListTile(
+                  title: const Text("Ikuti Sistem"),
+                  onTap: () {
+                    AdaptiveTheme.of(context).setSystem();
+                    _saveTheme('system'); // ⬅️ Simpan pilihan
+                    Navigator.pop(context);
                   },
                 ),
               ],
+            ),
+
+            const Spacer(),
+
+            // ⭐ Rating
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    "Beri Rating Aplikasi:",
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 8),
+                  RatingBar.builder(
+                    initialRating: _rating,
+                    minRating: 1,
+                    allowHalfRating: true,
+                    itemCount: 5,
+                    itemSize: 35,
+                    unratedColor: Colors.grey.shade300,
+                    itemBuilder: (context, index) {
+                      return const Icon(Icons.star, color: Colors.amber);
+                    },
+                    onRatingUpdate: (rating) {
+                      setState(() {
+                        _rating = rating;
+                      });
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text("Rating: $rating")),
+                      );
+                    },
+                  ),
+                ],
+              ),
+            ),
+
+            ListTile(
+              leading: Icon(
+                Icons.logout,
+                color: Theme.of(context).colorScheme.error,
+              ),
+              title: Text(
+                "Logout",
+                style: TextStyle(color: Theme.of(context).colorScheme.error),
+              ),
+              onTap: () {
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (context) => const Login()),
+                );
+              },
             ),
           ],
         ),
@@ -107,7 +233,7 @@ class _DashboardState extends State<Dashboard> {
 
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: Theme.of(context).colorScheme.surface,
           borderRadius: const BorderRadius.only(
             topLeft: Radius.circular(25),
             topRight: Radius.circular(25),
@@ -127,9 +253,9 @@ class _DashboardState extends State<Dashboard> {
           ),
           child: BottomNavigationBar(
             type: BottomNavigationBarType.fixed,
-            backgroundColor: Colors.white,
-            selectedItemColor: Colors.teal,
-            unselectedItemColor: Colors.grey,
+            backgroundColor: Theme.of(context).colorScheme.surface,
+            selectedItemColor: Theme.of(context).colorScheme.primary,
+            unselectedItemColor: Theme.of(context).hintColor,
             currentIndex: myIndex,
             onTap: (index) {
               setState(() {

@@ -1,12 +1,21 @@
 class KategoriObat {
-  String idKategori;
-  String namaKategori;
-  String deskripsi;
+  String _idKategori;
+  String _namaKategori;
+  String _deskripsi;
 
-  KategoriObat(this.idKategori, this.namaKategori, this.deskripsi);
+  KategoriObat(this._idKategori, this._namaKategori, this._deskripsi);
+
+  String get idKategori => _idKategori;
+  set idKategori(String value) => _idKategori = value;
+
+  String get namaKategori => _namaKategori;
+  set namaKategori(String value) => _namaKategori = value;
+
+  String get deskripsi => _deskripsi;
+  set deskripsi(String value) => _deskripsi = value;
 
   void tampilkanKategori() {
-    print("[$idKategori] $namaKategori → $deskripsi");
+    print("[$_idKategori] $_namaKategori → $_deskripsi");
   }
 }
 

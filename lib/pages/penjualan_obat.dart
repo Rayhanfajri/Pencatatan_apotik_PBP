@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:getwidget/getwidget.dart';
+import 'package:fl_chart/fl_chart.dart';
+import 'package:intl/intl.dart';
 import '/model/penjualan.dart';
 
 class PenjualanObat extends StatefulWidget {
@@ -17,11 +20,21 @@ class PenjualanObat extends StatefulWidget {
 
 class _PenjualanObatState extends State<PenjualanObat> {
   late List<Penjualan> _penjualan;
+  final DateFormat _formatter = DateFormat('dd MMM yyyy');
 
   @override
   void initState() {
     super.initState();
     _penjualan = List<Penjualan>.from(widget.penjualan);
+  }
+
+  String _formatDate(String dateString) {
+    try {
+      final date = DateTime.parse(dateString);
+      return _formatter.format(date);
+    } catch (_) {
+      return dateString;
+    }
   }
 
   @override
@@ -34,125 +47,211 @@ class _PenjualanObatState extends State<PenjualanObat> {
           end: Alignment.bottomRight,
         ),
       ),
-      child: Stack(
+      child: Column(
         children: [
-          Positioned(
-            top: -40,
-            left: -30,
-            child: Container(
-              width: 150,
-              height: 150,
-              decoration: BoxDecoration(
-                color: Colors.teal.withOpacity(0.1),
-                shape: BoxShape.circle,
+          Expanded(
+            child: GridView.builder(
+              padding: const EdgeInsets.all(8),
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 4,
+                childAspectRatio: 1.1,
+                crossAxisSpacing: 8,
+                mainAxisSpacing: 8,
               ),
-            ),
-          ),
-          Positioned(
-            bottom: -60,
-            right: -40,
-            child: Container(
-              width: 200,
-              height: 200,
-              decoration: BoxDecoration(
-                color: Colors.teal.withOpacity(0.15),
-                shape: BoxShape.circle,
-              ),
-            ),
-          ),
-
-          Column(
-            children: [
-              Expanded(
-                child: ListView.builder(
-                  itemCount: _penjualan.length,
-                  itemBuilder: (context, index) {
-                    final item = _penjualan[index];
-                    return Card(
-                      color: Colors.white,
-                      elevation: 4,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      margin: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 6,
-                      ),
-                      child: ListTile(
-                        title: Text(
+              itemCount: _penjualan.length,
+              itemBuilder: (context, index) {
+                final item = _penjualan[index];
+                return GestureDetector(
+                  onTap: () => _showDetailDialog(context, item),
+                  child: GFCard(
+                    color: Colors.white,
+                    elevation: 2,
+                    borderRadius: BorderRadius.circular(12),
+                    padding: const EdgeInsets.all(10),
+                    content: Column(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        GFAvatar(
+                          backgroundColor: Colors.teal.shade200,
+                          child: const Icon(
+                            Icons.medication,
+                            color: Colors.white,
+                            size: 28,
+                          ),
+                          shape: GFAvatarShape.circle,
+                          size: 48,
+                        ),
+                        Text(
                           item.namaObat,
                           style: const TextStyle(
                             fontWeight: FontWeight.bold,
+                            fontSize: 16,
                             color: Colors.teal,
                           ),
+                          textAlign: TextAlign.center,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
-                        subtitle: Text(
-                          "Jumlah: ${item.jumlah}\nTanggal: ${item.tanggal}",
-                          style: TextStyle(color: Colors.grey.shade700),
+                        Text(
+                          "Jumlah: ${item.jumlah}",
+                          style: const TextStyle(fontSize: 14),
                         ),
-                        onTap: () {
-                          _showDetailDialog(context, item);
-                        },
-                        trailing: Row(
-                          mainAxisSize: MainAxisSize.min,
+                        Text(
+                          "Tanggal: ${_formatDate(item.tanggal)}",
+                          style: const TextStyle(
+                            fontSize: 13,
+                            color: Colors.grey,
+                          ),
+                        ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            IconButton(
-                              icon: const Icon(Icons.edit, color: Colors.blue),
-                              onPressed: () {
-                                _showEditDialog(context, index, item);
-                              },
+                            GFIconButton(
+                              icon: const Icon(
+                                Icons.edit,
+                                color: Colors.blue,
+                                size: 20,
+                              ),
+                              shape: GFIconButtonShape.circle,
+                              color: Colors.white,
+                              onPressed: () =>
+                                  _showEditDialog(context, index, item),
                             ),
-                            IconButton(
-                              icon: const Icon(Icons.delete, color: Colors.red),
+                            GFIconButton(
+                              icon: const Icon(
+                                Icons.delete,
+                                color: Colors.red,
+                                size: 20,
+                              ),
+                              shape: GFIconButtonShape.circle,
+                              color: Colors.white,
                               onPressed: () {
-                                setState(() {
-                                  _penjualan.removeAt(index);
-                                });
+                                setState(() => _penjualan.removeAt(index));
                                 widget.onUpdate(_penjualan);
                               },
                             ),
                           ],
                         ),
-                      ),
-                    );
-                  },
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(12.0),
-                child: ElevatedButton.icon(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.teal,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(
-                      vertical: 14,
-                      horizontal: 24,
+                      ],
                     ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    elevation: 6,
                   ),
-                  icon: const Icon(Icons.add),
-                  label: const Text(
-                    "Tambah Penjualan",
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                  ),
-                  onPressed: () => _showAddDialog(context),
-                ),
-              ),
-            ],
+                );
+              },
+            ),
           ),
+          Padding(
+            padding: const EdgeInsets.all(12.0),
+            child: Row(
+              children: [
+                Expanded(
+                  child: GFButton(
+                    color: Colors.teal,
+                    shape: GFButtonShape.pills,
+                    fullWidthButton: true,
+                    icon: const Icon(Icons.add, color: Colors.white),
+                    text: "Tambah Penjualan",
+                    onPressed: () => _showAddDialog(context),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                GFIconButton(
+                  icon: const Icon(Icons.bar_chart, color: Colors.teal),
+                  shape: GFIconButtonShape.circle,
+                  color: Colors.white,
+                  onPressed: () => _showChartDialog(context),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            "Grafik Penjualan",
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: Colors.teal,
+            ),
+          ),
+          const SizedBox(height: 8),
+          _buildChartPreview(),
         ],
       ),
     );
   }
 
+  // 🔹 PREVIEW CHART KECIL
+  Widget _buildChartPreview() {
+    if (_penjualan.isEmpty) {
+      return const SizedBox(
+        height: 180,
+        child: Center(child: Text("Belum ada data penjualan.")),
+      );
+    }
+
+    final Map<String, int> dataByDate = {};
+    for (var p in _penjualan) {
+      dataByDate[p.tanggal] = (dataByDate[p.tanggal] ?? 0) + p.jumlah;
+    }
+
+    final dates = dataByDate.keys.toList();
+    final values = dataByDate.values.toList();
+
+    return SizedBox(
+      height: 180,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 12),
+        child: BarChart(
+          BarChartData(
+            alignment: BarChartAlignment.spaceAround,
+            titlesData: FlTitlesData(
+              leftTitles: AxisTitles(
+                sideTitles: SideTitles(showTitles: true, reservedSize: 28),
+              ),
+              bottomTitles: AxisTitles(
+                sideTitles: SideTitles(
+                  showTitles: true,
+                  getTitlesWidget: (value, meta) {
+                    int idx = value.toInt();
+                    if (idx >= 0 && idx < dates.length) {
+                      return Padding(
+                        padding: const EdgeInsets.only(top: 6),
+                        child: Text(
+                          _formatDate(dates[idx]),
+                          style: const TextStyle(fontSize: 10),
+                        ),
+                      );
+                    }
+                    return const SizedBox.shrink();
+                  },
+                ),
+              ),
+            ),
+            borderData: FlBorderData(show: false),
+            barGroups: List.generate(
+              dates.length,
+              (i) => BarChartGroupData(
+                x: i,
+                barRods: [
+                  BarChartRodData(
+                    toY: values[i].toDouble(),
+                    color: Colors.teal,
+                    width: 18,
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  // 🔹 DIALOG DETAIL
   void _showDetailDialog(BuildContext context, Penjualan item) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      builder: (_) => AlertDialog(
         title: const Text(
           "Detail Penjualan",
           style: TextStyle(color: Colors.teal),
@@ -163,7 +262,7 @@ class _PenjualanObatState extends State<PenjualanObat> {
           children: [
             Text("Nama Obat: ${item.namaObat}"),
             Text("Jumlah: ${item.jumlah}"),
-            Text("Tanggal: ${item.tanggal}"),
+            Text("Tanggal: ${_formatDate(item.tanggal)}"),
           ],
         ),
         actions: [
@@ -176,50 +275,35 @@ class _PenjualanObatState extends State<PenjualanObat> {
     );
   }
 
-  void _showEditDialog(BuildContext context, int index, Penjualan item) {
-    final namaController = TextEditingController(text: item.namaObat);
-    final jumlahController = TextEditingController(
-      text: item.jumlah.toString(),
-    );
-    final tanggalController = TextEditingController(text: item.tanggal);
+  // 🔹 DIALOG TAMBAH
+  void _showAddDialog(BuildContext context) {
+    final TextEditingController namaCtrl = TextEditingController();
+    final TextEditingController jumlahCtrl = TextEditingController();
+    final TextEditingController tanggalCtrl = TextEditingController();
 
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text("Edit Penjualan"),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: namaController,
-                decoration: const InputDecoration(labelText: "Nama Obat"),
+      builder: (_) => AlertDialog(
+        title: const Text("Tambah Penjualan"),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: namaCtrl,
+              decoration: const InputDecoration(labelText: "Nama Obat"),
+            ),
+            TextField(
+              controller: jumlahCtrl,
+              decoration: const InputDecoration(labelText: "Jumlah"),
+              keyboardType: TextInputType.number,
+            ),
+            TextField(
+              controller: tanggalCtrl,
+              decoration: const InputDecoration(
+                labelText: "Tanggal (YYYY-MM-DD)",
               ),
-              TextField(
-                controller: jumlahController,
-                keyboardType: TextInputType.number,
-                decoration: const InputDecoration(labelText: "Jumlah"),
-              ),
-              TextFormField(
-                controller: tanggalController,
-                readOnly: true,
-                decoration: const InputDecoration(labelText: "Tanggal"),
-                onTap: () async {
-                  final DateTime? pickedDate = await showDatePicker(
-                    context: context,
-                    initialDate:
-                        DateTime.tryParse(item.tanggal) ?? DateTime.now(),
-                    firstDate: DateTime(2000),
-                    lastDate: DateTime(2100),
-                  );
-                  if (pickedDate != null) {
-                    tanggalController.text =
-                        "${pickedDate.year}-${pickedDate.month.toString().padLeft(2, '0')}-${pickedDate.day.toString().padLeft(2, '0')}";
-                  }
-                },
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
         actions: [
           TextButton(
@@ -229,10 +313,12 @@ class _PenjualanObatState extends State<PenjualanObat> {
           ElevatedButton(
             onPressed: () {
               setState(() {
-                _penjualan[index] = Penjualan(
-                  namaObat: namaController.text,
-                  jumlah: int.tryParse(jumlahController.text) ?? item.jumlah,
-                  tanggal: tanggalController.text,
+                _penjualan.add(
+                  Penjualan(
+                    namaObat: namaCtrl.text,
+                    jumlah: int.tryParse(jumlahCtrl.text) ?? 0,
+                    tanggal: tanggalCtrl.text,
+                  ),
                 );
               });
               widget.onUpdate(_penjualan);
@@ -245,47 +331,41 @@ class _PenjualanObatState extends State<PenjualanObat> {
     );
   }
 
-  void _showAddDialog(BuildContext context) {
-    final namaController = TextEditingController();
-    final jumlahController = TextEditingController();
-    final tanggalController = TextEditingController();
+  // 🔹 DIALOG EDIT
+  void _showEditDialog(BuildContext context, int index, Penjualan item) {
+    final TextEditingController namaCtrl = TextEditingController(
+      text: item.namaObat,
+    );
+    final TextEditingController jumlahCtrl = TextEditingController(
+      text: item.jumlah.toString(),
+    );
+    final TextEditingController tanggalCtrl = TextEditingController(
+      text: item.tanggal,
+    );
 
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text("Tambah Penjualan"),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: namaController,
-                decoration: const InputDecoration(labelText: "Nama Obat"),
+      builder: (_) => AlertDialog(
+        title: const Text("Edit Penjualan"),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: namaCtrl,
+              decoration: const InputDecoration(labelText: "Nama Obat"),
+            ),
+            TextField(
+              controller: jumlahCtrl,
+              decoration: const InputDecoration(labelText: "Jumlah"),
+              keyboardType: TextInputType.number,
+            ),
+            TextField(
+              controller: tanggalCtrl,
+              decoration: const InputDecoration(
+                labelText: "Tanggal (YYYY-MM-DD)",
               ),
-              TextField(
-                controller: jumlahController,
-                keyboardType: TextInputType.number,
-                decoration: const InputDecoration(labelText: "Jumlah"),
-              ),
-              TextFormField(
-                controller: tanggalController,
-                readOnly: true,
-                decoration: const InputDecoration(labelText: "Tanggal"),
-                onTap: () async {
-                  final DateTime? pickedDate = await showDatePicker(
-                    context: context,
-                    initialDate: DateTime.now(),
-                    firstDate: DateTime(2000),
-                    lastDate: DateTime(2100),
-                  );
-                  if (pickedDate != null) {
-                    tanggalController.text =
-                        "${pickedDate.year}-${pickedDate.month.toString().padLeft(2, '0')}-${pickedDate.day.toString().padLeft(2, '0')}";
-                  }
-                },
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
         actions: [
           TextButton(
@@ -294,25 +374,85 @@ class _PenjualanObatState extends State<PenjualanObat> {
           ),
           ElevatedButton(
             onPressed: () {
-              if (namaController.text.isNotEmpty &&
-                  jumlahController.text.isNotEmpty &&
-                  tanggalController.text.isNotEmpty) {
-                setState(() {
-                  _penjualan.add(
-                    Penjualan(
-                      namaObat: namaController.text,
-                      jumlah: int.tryParse(jumlahController.text) ?? 0,
-                      tanggal: tanggalController.text,
-                    ),
-                  );
-                });
-                widget.onUpdate(_penjualan);
-                Navigator.pop(context);
-              }
+              setState(() {
+                _penjualan[index] = Penjualan(
+                  namaObat: namaCtrl.text,
+                  jumlah: int.tryParse(jumlahCtrl.text) ?? 0,
+                  tanggal: tanggalCtrl.text,
+                );
+              });
+              widget.onUpdate(_penjualan);
+              Navigator.pop(context);
             },
-            child: const Text("Tambah"),
+            child: const Text("Simpan"),
           ),
         ],
+      ),
+    );
+  }
+
+  // 🔹 DIALOG CHART BESAR
+  void _showChartDialog(BuildContext context) {
+    final Map<String, int> dataByDate = {};
+    for (var p in _penjualan) {
+      dataByDate[p.tanggal] = (dataByDate[p.tanggal] ?? 0) + p.jumlah;
+    }
+
+    final dates = dataByDate.keys.toList();
+    final values = dataByDate.values.toList();
+
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text(
+          "Grafik Penjualan",
+          style: TextStyle(color: Colors.teal),
+        ),
+        content: SizedBox(
+          width: 400,
+          height: 300,
+          child: LineChart(
+            LineChartData(
+              gridData: FlGridData(show: true),
+              borderData: FlBorderData(show: true),
+              titlesData: FlTitlesData(
+                leftTitles: AxisTitles(
+                  sideTitles: SideTitles(showTitles: true),
+                ),
+                bottomTitles: AxisTitles(
+                  sideTitles: SideTitles(
+                    showTitles: true,
+                    getTitlesWidget: (value, meta) {
+                      int idx = value.toInt();
+                      if (idx >= 0 && idx < dates.length) {
+                        return Padding(
+                          padding: const EdgeInsets.only(top: 8),
+                          child: Text(
+                            _formatDate(dates[idx]),
+                            style: const TextStyle(fontSize: 10),
+                          ),
+                        );
+                      }
+                      return const SizedBox.shrink();
+                    },
+                  ),
+                ),
+              ),
+              lineBarsData: [
+                LineChartBarData(
+                  isCurved: true,
+                  spots: [
+                    for (int i = 0; i < values.length; i++)
+                      FlSpot(i.toDouble(), values[i].toDouble()),
+                  ],
+                  color: Colors.teal,
+                  barWidth: 3,
+                  dotData: const FlDotData(show: true),
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }
