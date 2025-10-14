@@ -2,8 +2,8 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 import 'package:chewie/chewie.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'login.dart';
-import '/model/user.dart';
 
 class Regis extends StatefulWidget {
   const Regis({super.key});
@@ -53,6 +53,10 @@ class _RegisState extends State<Regis> {
 
   @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+    final width = size.width;
+    final height = size.height;
+
     return Scaffold(
       body: Stack(
         children: [
@@ -69,50 +73,51 @@ class _RegisState extends State<Regis> {
             )
           else
             Container(color: Colors.black),
-
           Container(color: Colors.black.withOpacity(0.6)),
-
           Center(
             child: SingleChildScrollView(
               child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 600),
+                constraints: BoxConstraints(
+                  maxWidth: width < 500 ? width * 0.95 : 500,
+                ),
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(20),
                   child: BackdropFilter(
                     filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
                     child: Container(
                       color: Colors.white.withOpacity(0.25),
-                      padding: const EdgeInsets.all(24),
-                      margin: const EdgeInsets.all(24),
+                      padding: EdgeInsets.all((width * 0.06).clamp(16, 32)),
+                      margin: EdgeInsets.all((width * 0.04).clamp(8, 24)),
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const SizedBox(height: 30),
-                          _logo(),
-                          const SizedBox(height: 10),
-                          const Text(
+                          SizedBox(height: height * 0.04),
+                          _logo(width),
+                          SizedBox(height: height * 0.01),
+                          Text(
                             "Registrasi Akun",
                             style: TextStyle(
-                              fontSize: 28,
+                              fontSize: (width * 0.06).clamp(18, 28),
                               fontWeight: FontWeight.bold,
                               color: Colors.green,
                             ),
                           ),
-                          const SizedBox(height: 30),
-                          _regisForm(),
-                          const SizedBox(height: 30),
-                          _emailInput("Email", "Masukkan Email"),
-                          const SizedBox(height: 30),
-                          _passwordInput(),
-                          const SizedBox(height: 30),
-                          _confirmPasswordInput(),
-                          const SizedBox(height: 30),
-                          _regisBtn(context),
-                          const SizedBox(height: 30),
+                          SizedBox(height: height * 0.04),
+                          _regisForm(width),
+                          SizedBox(height: height * 0.04),
+                          _emailInput("Email", "Masukkan Email", width),
+                          SizedBox(height: height * 0.04),
+                          _passwordInput(width),
+                          SizedBox(height: height * 0.04),
+                          _confirmPasswordInput(width),
+                          SizedBox(height: height * 0.04),
+                          _regisBtn(context, width),
+                          SizedBox(height: height * 0.04),
                           _loginBtn(
                             context,
                             "Sudah punya akun? Login",
                             Colors.white,
+                            width,
                           ),
                         ],
                       ),
@@ -127,14 +132,14 @@ class _RegisState extends State<Regis> {
     );
   }
 
-  Widget _emailInput(String label, String hintText) {
+  Widget _emailInput(String label, String hintText, double width) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           label,
-          style: const TextStyle(
-            fontSize: 18,
+          style: TextStyle(
+            fontSize: (width * 0.045).clamp(14, 20),
             color: Colors.white,
             fontWeight: FontWeight.bold,
           ),
@@ -152,14 +157,14 @@ class _RegisState extends State<Regis> {
     );
   }
 
-  Widget _passwordInput() {
+  Widget _passwordInput(double width) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           "Password",
           style: TextStyle(
-            fontSize: 18,
+            fontSize: (width * 0.045).clamp(14, 20),
             color: Colors.white,
             fontWeight: FontWeight.bold,
           ),
@@ -189,14 +194,14 @@ class _RegisState extends State<Regis> {
     );
   }
 
-  Widget _confirmPasswordInput() {
+  Widget _confirmPasswordInput(double width) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           "Konfirmasi Password",
           style: TextStyle(
-            fontSize: 18,
+            fontSize: (width * 0.045).clamp(14, 20),
             color: Colors.white,
             fontWeight: FontWeight.bold,
           ),
@@ -228,62 +233,68 @@ class _RegisState extends State<Regis> {
     );
   }
 
-  Widget _regisBtn(BuildContext context) {
+  Widget _regisBtn(BuildContext context, double width) {
     return SizedBox(
       width: double.infinity,
-      height: 50,
+      height: (width * 0.12).clamp(45, 60),
       child: ElevatedButton(
         style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
-        onPressed: () {
-          String email = _emailController.text.trim();
-          String password = _passwordController.text.trim();
-          String confirmPassword = _confirmPasswordController.text.trim();
+        onPressed: () async {
+          final email = _emailController.text.trim();
+          final password = _passwordController.text.trim();
+          final confirmPassword = _confirmPasswordController.text.trim();
 
           if (email.isEmpty || password.isEmpty || confirmPassword.isEmpty) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text("Semua field harus diisi!"),
-                backgroundColor: Colors.red,
-              ),
-            );
+            _showSnack(context, "Semua field harus diisi!", Colors.red);
             return;
           }
 
           if (password != confirmPassword) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text("Password dan konfirmasi tidak cocok!"),
-                backgroundColor: Colors.red,
-              ),
+            _showSnack(
+              context,
+              "Password dan konfirmasi tidak cocok!",
+              Colors.red,
             );
             return;
           }
 
-          User user;
-          if (email.contains("admin")) {
-            user = Admin(email, password);
-          } else {
-            user = Kasir(email, password);
+          try {
+            final prefs = await SharedPreferences.getInstance();
+            final usersData = prefs.getStringList('users') ?? [];
+
+            bool emailExists = usersData.any((data) {
+              final parts = data.split('|');
+              return parts[0] == email;
+            });
+
+            if (emailExists) {
+              _showSnack(context, "Email sudah terdaftar!", Colors.orange);
+              return;
+            }
+
+            usersData.add('$email|$password');
+            await prefs.setStringList('users', usersData);
+
+            _showSnack(context, "Registrasi berhasil!", Colors.green);
+
+            if (!mounted) return;
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (_) => const Login()),
+            );
+          } catch (e) {
+            debugPrint("❌ Error saat registrasi: $e");
+            _showSnack(
+              context,
+              "Terjadi kesalahan saat registrasi.",
+              Colors.red,
+            );
           }
-
-          user.regis();
-
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text("Registrasi berhasil! Silakan login."),
-              backgroundColor: Colors.green,
-            ),
-          );
-
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => const Login()),
-          );
         },
-        child: const Text(
-          'Daftar',
+        child: Text(
+          "Daftar",
           style: TextStyle(
-            fontSize: 18,
+            fontSize: (width * 0.045).clamp(14, 20),
             color: Colors.white,
             fontWeight: FontWeight.bold,
           ),
@@ -292,18 +303,29 @@ class _RegisState extends State<Regis> {
     );
   }
 
-  Widget _loginBtn(BuildContext context, String label, Color textColor) {
+  void _showSnack(BuildContext context, String msg, Color color) {
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(msg), backgroundColor: color));
+  }
+
+  Widget _loginBtn(
+    BuildContext context,
+    String label,
+    Color textColor,
+    double width,
+  ) {
     return InkWell(
       onTap: () {
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => const Login()),
+          MaterialPageRoute(builder: (_) => const Login()),
         );
       },
       child: Text(
         label,
         style: TextStyle(
-          fontSize: 14,
+          fontSize: (width * 0.035).clamp(12, 18),
           color: textColor,
           fontWeight: FontWeight.bold,
           decoration: TextDecoration.underline,
@@ -312,18 +334,23 @@ class _RegisState extends State<Regis> {
     );
   }
 
-  Widget _logo() {
+  Widget _logo(double width) {
     return Center(
-      child: SizedBox(child: Image.asset('assets/images/logo.png', height: 80)),
+      child: SizedBox(
+        child: Image.asset(
+          'assets/images/logo.png',
+          height: (width * 0.16).clamp(60, 120),
+        ),
+      ),
     );
   }
 
-  Widget _regisForm() {
-    return const Center(
+  Widget _regisForm(double width) {
+    return Center(
       child: Text(
         "Buat Akun Baru",
         style: TextStyle(
-          fontSize: 26,
+          fontSize: (width * 0.05).clamp(16, 24),
           color: Colors.white,
           fontWeight: FontWeight.bold,
         ),

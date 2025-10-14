@@ -25,38 +25,76 @@ class _SplashScreenState extends State<SplashScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Container(
-        color: Colors.green,
-        width: double.infinity,
-        height: double.infinity,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Image.asset('assets/images/logo.png', height: 120),
-            const SizedBox(height: 20),
-            const Text(
-              "Pencatatan Apotik",
-              style: TextStyle(
-                fontSize: 28,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
-            ),
-            const SizedBox(height: 10),
-            const CircularProgressIndicator(color: Colors.white),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final width = constraints.maxWidth;
+        final height = constraints.maxHeight;
 
-            const Text(
-              "by Rayhan Fajri A",
-              style: TextStyle(
-                fontSize: 16,
-                fontStyle: FontStyle.italic,
-                color: Colors.white70,
+        // Batas maksimal skala agar tampilan tidak terlalu besar
+        double scale(double size) {
+          double baseScale = width / 400;
+          if (baseScale > 1.5) baseScale = 1.5; // max scale
+          if (baseScale < 0.7) baseScale = 0.7; // min scale
+          return size * baseScale;
+        }
+
+        return Scaffold(
+          body: Container(
+            width: width,
+            height: height,
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Colors.green, Colors.teal],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
               ),
             ),
-          ],
-        ),
-      ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                // Logo
+                Image.asset('assets/images/logo.png', height: scale(100)),
+                SizedBox(height: scale(20)),
+
+                // Judul
+                Text(
+                  "Pencatatan Apotik",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: scale(26),
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+
+                SizedBox(height: scale(15)),
+
+                // Loading
+                SizedBox(
+                  width: scale(35),
+                  height: scale(35),
+                  child: const CircularProgressIndicator(
+                    color: Colors.white,
+                    strokeWidth: 3,
+                  ),
+                ),
+
+                SizedBox(height: scale(15)),
+
+                // Credit
+                Text(
+                  "by Rayhan Fajri A",
+                  style: TextStyle(
+                    fontSize: scale(14),
+                    fontStyle: FontStyle.italic,
+                    color: Colors.white70,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 }

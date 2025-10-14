@@ -4,8 +4,8 @@ import '/model/penjualan.dart';
 
 class HomePage extends StatelessWidget {
   final String email;
-  final List<Penjualan> penjualan; // dari model Penjualan
-  final List<Obat> stok; // dari model Obat
+  final List<Penjualan> penjualan;
+  final List<Obat> stok;
   final Function(int) onTabChange;
 
   const HomePage({
@@ -23,7 +23,7 @@ class HomePage extends StatelessWidget {
     return Container(
       decoration: const BoxDecoration(
         gradient: LinearGradient(
-          colors: [Color(0xFFE8F5E9), Color(0xFFFFFFFF)],
+          colors: [Color(0xFFE3F2FD), Color(0xFFFFFFFF)], // biru muda ke putih
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
         ),
@@ -31,6 +31,7 @@ class HomePage extends StatelessWidget {
       child: SingleChildScrollView(
         child: Column(
           children: [
+            // Banner Tetap
             Container(
               height: 180,
               width: double.infinity,
@@ -45,7 +46,7 @@ class HomePage extends StatelessWidget {
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.2),
+                    color: Colors.black.withOpacity(0.25),
                     blurRadius: 8,
                     offset: const Offset(0, 4),
                   ),
@@ -59,44 +60,53 @@ class HomePage extends StatelessWidget {
                   ),
                   color: Colors.black.withOpacity(0.25),
                 ),
-                child: Center(
+                child: const Center(
                   child: Text(
                     "Aplikasi Pencatatan Apotik",
-                    style: const TextStyle(
+                    style: TextStyle(
                       color: Colors.white,
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
+                      letterSpacing: 1.2,
                     ),
                   ),
                 ),
               ),
             ),
 
-            // Info Card
             Padding(
               padding: const EdgeInsets.all(16),
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 25),
 
                   _infoCard(
-                    "Total Penjualan",
-                    "${penjualan.length}", // jumlah transaksi
-                    Icons.bar_chart,
-                    Colors.blue,
-                    () => onTabChange(1), // klik pindah ke tab penjualan
+                    title: "Total Penjualan",
+                    value: "${penjualan.length}",
+                    icon: Icons.show_chart_rounded,
+                    color: Colors.blueAccent,
+                    onTap: () => onTabChange(1),
                   ),
 
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 18),
 
-                  // info total stok obat
                   _infoCard(
-                    "Total Stok Obat",
-                    "$totalStok",
-                    Icons.inventory,
-                    Colors.green,
-                    () => onTabChange(2), // klik pindah ke tab stok
+                    title: "Total Stok Obat",
+                    value: "$totalStok",
+                    icon: Icons.local_pharmacy_rounded,
+                    color: Colors.teal,
+                    onTap: () => onTabChange(2),
+                  ),
+
+                  const SizedBox(height: 25),
+
+                  Text(
+                    "Selamat datang, ${email.split('@')[0]}!",
+                    style: TextStyle(
+                      color: Colors.blueGrey.shade700,
+                      fontWeight: FontWeight.w500,
+                      fontSize: 16,
+                    ),
                   ),
                 ],
               ),
@@ -107,47 +117,61 @@ class HomePage extends StatelessWidget {
     );
   }
 
-  Widget _infoCard(
-    String title,
-    String value,
-    IconData icon,
-    Color color,
-    VoidCallback onTap,
-  ) {
+  Widget _infoCard({
+    required String title,
+    required String value,
+    required IconData icon,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
     return GestureDetector(
       onTap: onTap,
       child: Card(
         elevation: 6,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        shadowColor: color.withOpacity(0.3),
+        color: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
         child: Padding(
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.symmetric(vertical: 22, horizontal: 20),
           child: Row(
             children: [
-              CircleAvatar(
-                radius: 30,
-                backgroundColor: color.withOpacity(0.15),
-                child: Icon(icon, size: 28, color: color),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: color.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(icon, size: 32, color: color),
               ),
-              const SizedBox(width: 16),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
+              const SizedBox(width: 20),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: TextStyle(
+                        color: Colors.blueGrey.shade800,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
                     ),
-                  ),
-                  Text(
-                    value,
-                    style: TextStyle(
-                      fontSize: 22,
-                      color: color,
-                      fontWeight: FontWeight.w600,
+                    const SizedBox(height: 4),
+                    Text(
+                      value,
+                      style: TextStyle(
+                        color: color,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 24,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
+              ),
+              const Icon(
+                Icons.arrow_forward_ios_rounded,
+                size: 18,
+                color: Colors.blueGrey,
               ),
             ],
           ),

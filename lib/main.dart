@@ -5,6 +5,7 @@ import 'pages/splash_screen.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final savedThemeMode = await AdaptiveTheme.getThemeMode();
+
   runApp(MyApp(savedThemeMode: savedThemeMode));
 }
 

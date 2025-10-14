@@ -20,12 +20,44 @@ class PenjualanObat extends StatefulWidget {
 
 class _PenjualanObatState extends State<PenjualanObat> {
   late List<Penjualan> _penjualan;
+  late List<Penjualan> _filteredPenjualan;
   final DateFormat _formatter = DateFormat('dd MMM yyyy');
+  final TextEditingController _searchController = TextEditingController();
+  String _sortOrder = 'terbaru';
 
   @override
   void initState() {
     super.initState();
     _penjualan = List<Penjualan>.from(widget.penjualan);
+    _filteredPenjualan = List<Penjualan>.from(_penjualan);
+    _searchController.addListener(_applyFilter);
+    _sortData();
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  void _applyFilter() {
+    final query = _searchController.text.toLowerCase();
+    setState(() {
+      _filteredPenjualan = _penjualan
+          .where((item) => item.namaObat.toLowerCase().contains(query))
+          .toList();
+      _sortData();
+    });
+  }
+
+  void _sortData() {
+    _filteredPenjualan.sort((a, b) {
+      final dateA = DateTime.tryParse(a.tanggal) ?? DateTime(1900);
+      final dateB = DateTime.tryParse(b.tanggal) ?? DateTime(1900);
+      return _sortOrder == 'terbaru'
+          ? dateB.compareTo(dateA)
+          : dateA.compareTo(dateB);
+    });
   }
 
   String _formatDate(String dateString) {
@@ -49,96 +81,154 @@ class _PenjualanObatState extends State<PenjualanObat> {
       ),
       child: Column(
         children: [
-          Expanded(
-            child: GridView.builder(
-              padding: const EdgeInsets.all(8),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 4,
-                childAspectRatio: 1.1,
-                crossAxisSpacing: 8,
-                mainAxisSpacing: 8,
-              ),
-              itemCount: _penjualan.length,
-              itemBuilder: (context, index) {
-                final item = _penjualan[index];
-                return GestureDetector(
-                  onTap: () => _showDetailDialog(context, item),
-                  child: GFCard(
-                    color: Colors.white,
-                    elevation: 2,
-                    borderRadius: BorderRadius.circular(12),
-                    padding: const EdgeInsets.all(10),
-                    content: Column(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        GFAvatar(
-                          backgroundColor: Colors.teal.shade200,
-                          child: const Icon(
-                            Icons.medication,
-                            color: Colors.white,
-                            size: 28,
-                          ),
-                          shape: GFAvatarShape.circle,
-                          size: 48,
-                        ),
-                        Text(
-                          item.namaObat,
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                            color: Colors.teal,
-                          ),
-                          textAlign: TextAlign.center,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        Text(
-                          "Jumlah: ${item.jumlah}",
-                          style: const TextStyle(fontSize: 14),
-                        ),
-                        Text(
-                          "Tanggal: ${_formatDate(item.tanggal)}",
-                          style: const TextStyle(
-                            fontSize: 13,
-                            color: Colors.grey,
-                          ),
-                        ),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            GFIconButton(
-                              icon: const Icon(
-                                Icons.edit,
-                                color: Colors.blue,
-                                size: 20,
-                              ),
-                              shape: GFIconButtonShape.circle,
-                              color: Colors.white,
-                              onPressed: () =>
-                                  _showEditDialog(context, index, item),
-                            ),
-                            GFIconButton(
-                              icon: const Icon(
-                                Icons.delete,
-                                color: Colors.red,
-                                size: 20,
-                              ),
-                              shape: GFIconButtonShape.circle,
-                              color: Colors.white,
-                              onPressed: () {
-                                setState(() => _penjualan.removeAt(index));
-                                widget.onUpdate(_penjualan);
-                              },
-                            ),
-                          ],
-                        ),
-                      ],
+          // 🔹 SEARCH & SORT BAR
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _searchController,
+                    decoration: InputDecoration(
+                      hintText: "Cari nama obat...",
+                      prefixIcon: const Icon(Icons.search),
+                      filled: true,
+                      fillColor: Colors.white,
+                      contentPadding: const EdgeInsets.symmetric(
+                        vertical: 0,
+                        horizontal: 12,
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide.none,
+                      ),
                     ),
                   ),
-                );
-              },
+                ),
+                const SizedBox(width: 8),
+                DropdownButton<String>(
+                  value: _sortOrder,
+                  borderRadius: BorderRadius.circular(12),
+                  items: const [
+                    DropdownMenuItem(value: 'terbaru', child: Text("Terbaru")),
+                    DropdownMenuItem(value: 'terlama', child: Text("Terlama")),
+                  ],
+                  onChanged: (value) {
+                    if (value != null) {
+                      setState(() {
+                        _sortOrder = value;
+                        _sortData();
+                      });
+                    }
+                  },
+                ),
+              ],
             ),
           ),
+
+          // 🔹 GRID CARD
+          Expanded(
+            child: _filteredPenjualan.isEmpty
+                ? const Center(child: Text("Data tidak ditemukan"))
+                : GridView.builder(
+                    padding: const EdgeInsets.all(8),
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 4,
+                          childAspectRatio: 1.1,
+                          crossAxisSpacing: 8,
+                          mainAxisSpacing: 8,
+                        ),
+                    itemCount: _filteredPenjualan.length,
+                    itemBuilder: (context, index) {
+                      final item = _filteredPenjualan[index];
+                      return GestureDetector(
+                        onTap: () => _showDetailDialog(context, item),
+                        child: GFCard(
+                          color: Colors.white,
+                          elevation: 2,
+                          borderRadius: BorderRadius.circular(12),
+                          padding: const EdgeInsets.all(10),
+                          content: Column(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              GFAvatar(
+                                backgroundColor: Colors.teal.shade200,
+                                child: const Icon(
+                                  Icons.medication,
+                                  color: Colors.white,
+                                  size: 28,
+                                ),
+                                shape: GFAvatarShape.circle,
+                                size: 48,
+                              ),
+                              Text(
+                                item.namaObat,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 16,
+                                  color: Colors.teal,
+                                ),
+                                textAlign: TextAlign.center,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              Text(
+                                "Jumlah: ${item.jumlah}",
+                                style: const TextStyle(fontSize: 14),
+                              ),
+                              Text(
+                                "Tanggal: ${_formatDate(item.tanggal)}",
+                                style: const TextStyle(
+                                  fontSize: 13,
+                                  color: Colors.grey,
+                                ),
+                              ),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  GFIconButton(
+                                    icon: const Icon(
+                                      Icons.edit,
+                                      color: Colors.blue,
+                                      size: 20,
+                                    ),
+                                    shape: GFIconButtonShape.circle,
+                                    color: Colors.white,
+                                    onPressed: () {
+                                      final realIndex = _penjualan.indexOf(
+                                        item,
+                                      );
+                                      _showEditDialog(context, realIndex, item);
+                                    },
+                                  ),
+                                  GFIconButton(
+                                    icon: const Icon(
+                                      Icons.delete,
+                                      color: Colors.red,
+                                      size: 20,
+                                    ),
+                                    shape: GFIconButtonShape.circle,
+                                    color: Colors.white,
+                                    onPressed: () {
+                                      setState(() {
+                                        _penjualan.remove(item);
+                                        _applyFilter();
+                                      });
+                                      widget.onUpdate(_penjualan);
+                                    },
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+          ),
+
+          // 🔹 ADD & CHART BUTTON
           Padding(
             padding: const EdgeInsets.all(12.0),
             child: Row(
@@ -163,6 +253,7 @@ class _PenjualanObatState extends State<PenjualanObat> {
               ],
             ),
           ),
+
           const SizedBox(height: 8),
           const Text(
             "Grafik Penjualan",
@@ -320,6 +411,7 @@ class _PenjualanObatState extends State<PenjualanObat> {
                     tanggal: tanggalCtrl.text,
                   ),
                 );
+                _applyFilter();
               });
               widget.onUpdate(_penjualan);
               Navigator.pop(context);
@@ -380,6 +472,7 @@ class _PenjualanObatState extends State<PenjualanObat> {
                   jumlah: int.tryParse(jumlahCtrl.text) ?? 0,
                   tanggal: tanggalCtrl.text,
                 );
+                _applyFilter();
               });
               widget.onUpdate(_penjualan);
               Navigator.pop(context);

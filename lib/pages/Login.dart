@@ -4,7 +4,6 @@ import 'package:video_player/video_player.dart';
 import 'package:chewie/chewie.dart';
 import 'dashboard.dart';
 import 'regis.dart';
-import '/model/user.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class Login extends StatefulWidget {
@@ -25,6 +24,10 @@ class _LoginState extends State<Login> {
   @override
   void initState() {
     super.initState();
+    _initVideo();
+  }
+
+  Future<void> _initVideo() async {
     _videoController =
         VideoPlayerController.asset("assets/videos/background.mp4")
           ..setLooping(true)
@@ -42,6 +45,26 @@ class _LoginState extends State<Login> {
           });
   }
 
+  Future<void> saveLastLogin() async {
+    final prefs = await SharedPreferences.getInstance();
+    final now = DateTime.now().toIso8601String();
+    await prefs.setString('last_login', now);
+  }
+
+  Future<bool> _checkLogin(String email, String password) async {
+    final prefs = await SharedPreferences.getInstance();
+    final usersData = prefs.getStringList('users') ?? [];
+
+    for (var data in usersData) {
+      final parts = data.split('|');
+      if (parts.length == 2 && parts[0] == email && parts[1] == password) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
   @override
   void dispose() {
     _videoController.dispose();
@@ -49,96 +72,106 @@ class _LoginState extends State<Login> {
     super.dispose();
   }
 
-  Future<void> saveLastLogin() async {
-    final prefs = await SharedPreferences.getInstance();
-    final now = DateTime.now().toIso8601String();
-    await prefs.setString('last_login', now);
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Stack(
-        children: [
-          // Background Video
-          if (_chewieController != null && _videoController.value.isInitialized)
-            Positioned.fill(
-              child: FittedBox(
-                fit: BoxFit.cover,
-                child: SizedBox(
-                  width: _videoController.value.size.width,
-                  height: _videoController.value.size.height,
-                  child: Chewie(controller: _chewieController!),
-                ),
-              ),
-            )
-          else
-            Container(color: Colors.black),
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          double width = constraints.maxWidth;
+          double height = constraints.maxHeight;
 
-          Container(color: Colors.black.withOpacity(0.6)),
+          return Stack(
+            children: [
+              if (_chewieController != null &&
+                  _videoController.value.isInitialized)
+                Positioned.fill(
+                  child: FittedBox(
+                    fit: BoxFit.cover,
+                    child: SizedBox(
+                      width: _videoController.value.size.width,
+                      height: _videoController.value.size.height,
+                      child: Chewie(controller: _chewieController!),
+                    ),
+                  ),
+                )
+              else
+                Container(color: Colors.black),
 
-          Center(
-            child: SingleChildScrollView(
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 600),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(20),
-                  child: BackdropFilter(
-                    filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                    child: Container(
-                      color: Colors.white.withOpacity(0.25),
-                      padding: const EdgeInsets.all(24),
-                      margin: const EdgeInsets.all(24),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const SizedBox(height: 30),
-                          _logo(),
-                          const SizedBox(height: 10),
-                          const Text(
-                            "Pencatatan Apotik",
-                            style: TextStyle(
-                              fontSize: 28,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.green,
-                            ),
+              Container(color: Colors.black.withOpacity(0.6)),
+
+              Center(
+                child: SingleChildScrollView(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: width < 600 ? 16 : 32,
+                    vertical: 24,
+                  ),
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 500),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(20),
+                      child: BackdropFilter(
+                        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                        child: Container(
+                          color: Colors.white.withOpacity(0.25),
+                          padding: EdgeInsets.all((width * 0.05).clamp(16, 32)),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              SizedBox(height: height * 0.02),
+                              _logo(width),
+                              SizedBox(height: height * 0.015),
+                              Text(
+                                "Pencatatan Apotik",
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  fontSize: (width * 0.06).clamp(18, 28),
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.green,
+                                ),
+                              ),
+                              SizedBox(height: height * 0.04),
+                              _loginForm(width),
+                              SizedBox(height: height * 0.03),
+                              _emailInput(
+                                "Email",
+                                "Masukkan Email",
+                                false,
+                                width,
+                              ),
+                              SizedBox(height: height * 0.03),
+                              _passwordInput(width),
+                              SizedBox(height: height * 0.03),
+                              _loginBtn(context, width),
+                              SizedBox(height: height * 0.03),
+                              _daftarBtn(
+                                context,
+                                "Belum Punya Akun? Daftar",
+                                Colors.white,
+                                width,
+                              ),
+                            ],
                           ),
-                          const SizedBox(height: 30),
-                          _loginForm(),
-                          const SizedBox(height: 30),
-                          _emailInput("Email", "Masukkan Email", false),
-                          const SizedBox(height: 30),
-                          _passwordInput(),
-                          _forgotPasswordBtn(context),
-                          const SizedBox(height: 30),
-                          _loginBtn(context),
-                          const SizedBox(height: 30),
-                          _daftarBtn(
-                            context,
-                            "Belum Punya Akun? Daftar",
-                            Colors.white,
-                          ),
-                        ],
+                        ),
                       ),
                     ),
                   ),
                 ),
               ),
-            ),
-          ),
-        ],
+            ],
+          );
+        },
       ),
     );
   }
 
-  Widget _passwordInput() {
+  Widget _passwordInput(double width) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           "Password",
           style: TextStyle(
-            fontSize: 18,
+            fontSize: (width * 0.045).clamp(14, 20),
             color: Colors.white,
             fontWeight: FontWeight.bold,
           ),
@@ -168,14 +201,19 @@ class _LoginState extends State<Login> {
     );
   }
 
-  Widget _emailInput(String label, String hintText, bool isPassword) {
+  Widget _emailInput(
+    String label,
+    String hintText,
+    bool isPassword,
+    double width,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           label,
-          style: const TextStyle(
-            fontSize: 18,
+          style: TextStyle(
+            fontSize: (width * 0.045).clamp(14, 20),
             color: Colors.white,
             fontWeight: FontWeight.bold,
           ),
@@ -194,10 +232,10 @@ class _LoginState extends State<Login> {
     );
   }
 
-  Widget _loginBtn(BuildContext context) {
+  Widget _loginBtn(BuildContext context, double width) {
     return SizedBox(
       width: double.infinity,
-      height: 50,
+      height: (width * 0.12).clamp(45, 60),
       child: ElevatedButton(
         style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
         onPressed: () async {
@@ -214,28 +252,36 @@ class _LoginState extends State<Login> {
             return;
           }
 
-          User user;
-          if (email.contains("admin")) {
-            user = Admin(email, password);
+          bool success = await _checkLogin(email, password);
+
+          if (success) {
+            final prefs = await SharedPreferences.getInstance();
+            await prefs.setString(
+              'logged_in_email',
+              email,
+            ); // simpan user aktif
+            await saveLastLogin();
+
+            if (!mounted) return;
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => Dashboard(email: email)),
+            );
           } else {
-            user = Kasir(email, password);
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text(
+                  "Email atau Password salah atau belum terdaftar!",
+                ),
+                backgroundColor: Colors.red,
+              ),
+            );
           }
-
-          user.login();
-
-          await saveLastLogin();
-
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(
-              builder: (context) => Dashboard(email: user.username),
-            ),
-          );
         },
-        child: const Text(
+        child: Text(
           'Login',
           style: TextStyle(
-            fontSize: 18,
+            fontSize: (width * 0.045).clamp(14, 20),
             color: Colors.white,
             fontWeight: FontWeight.bold,
           ),
@@ -244,7 +290,12 @@ class _LoginState extends State<Login> {
     );
   }
 
-  Widget _daftarBtn(BuildContext context, String label, Color textColor) {
+  Widget _daftarBtn(
+    BuildContext context,
+    String label,
+    Color textColor,
+    double width,
+  ) {
     return InkWell(
       onTap: () {
         Navigator.push(
@@ -255,7 +306,7 @@ class _LoginState extends State<Login> {
       child: Text(
         label,
         style: TextStyle(
-          fontSize: 14,
+          fontSize: (width * 0.035).clamp(12, 16),
           color: textColor,
           fontWeight: FontWeight.bold,
           decoration: TextDecoration.underline,
@@ -264,35 +315,23 @@ class _LoginState extends State<Login> {
     );
   }
 
-  Widget _forgotPasswordBtn(BuildContext context) {
-    return Align(
-      alignment: Alignment.centerRight,
-      child: TextButton(
-        onPressed: () {},
-        child: const Text(
-          "Lupa Password?",
-          style: TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-            decoration: TextDecoration.underline,
-          ),
+  Widget _logo(double width) {
+    return Center(
+      child: SizedBox(
+        child: Image.asset(
+          'assets/images/logo.png',
+          height: (width * 0.16).clamp(80, 120),
         ),
       ),
     );
   }
 
-  Widget _logo() {
+  Widget _loginForm(double width) {
     return Center(
-      child: SizedBox(child: Image.asset('assets/images/logo.png', height: 80)),
-    );
-  }
-
-  Widget _loginForm() {
-    return const Center(
       child: Text(
         "Login",
         style: TextStyle(
-          fontSize: 26,
+          fontSize: (width * 0.05).clamp(18, 26),
           color: Colors.white,
           fontWeight: FontWeight.bold,
         ),

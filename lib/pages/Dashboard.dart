@@ -3,7 +3,7 @@ import 'package:adaptive_theme/adaptive_theme.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:avatars/avatars.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
+import 'edit_profil.dart';
 import 'login.dart';
 import 'home_page.dart';
 import 'penjualan_obat.dart';
@@ -28,6 +28,10 @@ class _DashboardState extends State<Dashboard> {
   double _rating = 3.5;
   String? _lastLogin;
 
+  // 🔹 Tambahan untuk data profil user
+  String _username = '';
+  String _email = '';
+
   @override
   void initState() {
     super.initState();
@@ -35,6 +39,7 @@ class _DashboardState extends State<Dashboard> {
     stok = List<Obat>.from(stokObatList);
     _loadSavedTheme();
     _loadLastLogin();
+    _loadUserData(); // 🟢 Load data user dari SharedPreferences
   }
 
   Future<void> _loadSavedTheme() async {
@@ -58,6 +63,15 @@ class _DashboardState extends State<Dashboard> {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
       _lastLogin = prefs.getString('last_login');
+    });
+  }
+
+  // 🟢 Ambil nama dan email dari SharedPreferences
+  Future<void> _loadUserData() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _username = prefs.getString('username') ?? 'User';
+      _email = prefs.getString('email') ?? widget.email;
     });
   }
 
@@ -110,133 +124,225 @@ class _DashboardState extends State<Dashboard> {
         ),
       ),
       drawer: Drawer(
-        child: Column(
-          children: [
-            UserAccountsDrawerHeader(
-              accountName: const Text("User"),
-              accountEmail: Text(widget.email),
-              currentAccountPicture: Avatar(
-                name: "User",
-                shape: AvatarShape.circle(50),
-              ),
-              decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.primary,
-              ),
+        child: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [Color(0xFF6A1B9A), Color(0xFFF3E5F5)],
             ),
-            ListTile(
-              leading: const Icon(Icons.edit),
-              title: const Text("Edit Profil"),
-              onTap: () {
-                Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text("Menu Edit Profil dipilih")),
-                );
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.settings),
-              title: const Text("Pengaturan"),
-              onTap: () {
-                Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text("Menu Pengaturan dipilih")),
-                );
-              },
-            ),
-            ExpansionTile(
-              leading: const Icon(Icons.brightness_6),
-              title: const Text("Tema"),
-              children: [
-                ListTile(
-                  title: const Text("Terang"),
-                  onTap: () {
-                    AdaptiveTheme.of(context).setLight();
-                    _saveTheme('light');
-                    Navigator.pop(context);
-                  },
+          ),
+          child: Column(
+            children: [
+              // HEADER PROFIL
+              Container(
+                margin: const EdgeInsets.all(16),
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.9),
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.1),
+                      blurRadius: 6,
+                      offset: const Offset(0, 3),
+                    ),
+                  ],
                 ),
-                ListTile(
-                  title: const Text("Gelap"),
-                  onTap: () {
-                    AdaptiveTheme.of(context).setDark();
-                    _saveTheme('dark');
-                    Navigator.pop(context);
-                  },
+                child: Row(
+                  children: [
+                    Avatar(name: _username, shape: AvatarShape.circle(45)),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            _username,
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.deepPurple,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            _email,
+                            style: const TextStyle(
+                              fontSize: 14,
+                              color: Colors.black54,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
-                ListTile(
-                  title: const Text("Ikuti Sistem"),
-                  onTap: () {
-                    AdaptiveTheme.of(context).setSystem();
-                    _saveTheme('system');
-                    Navigator.pop(context);
-                  },
+              ),
+
+              const Divider(thickness: 1, height: 1, color: Colors.white70),
+
+              // MENU UTAMA
+              Expanded(
+                child: Container(
+                  color: Colors.white.withOpacity(0.9),
+                  child: ListView(
+                    padding: EdgeInsets.zero,
+                    children: [
+                      ListTile(
+                        leading: const Icon(
+                          Icons.edit,
+                          color: Colors.deepPurple,
+                        ),
+                        title: const Text(
+                          "Edit Profil",
+                          style: TextStyle(fontWeight: FontWeight.w500),
+                        ),
+                        onTap: () async {
+                          Navigator.pop(context);
+                          final result = await Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => EditProfil(email: _email),
+                            ),
+                          );
+                          if (result == true) {
+                            await _loadUserData();
+                          }
+                        },
+                      ),
+                      ExpansionTile(
+                        leading: const Icon(
+                          Icons.brightness_6,
+                          color: Colors.deepPurple,
+                        ),
+                        title: const Text(
+                          "Tema",
+                          style: TextStyle(fontWeight: FontWeight.w500),
+                        ),
+                        children: [
+                          ListTile(
+                            title: const Text("Terang"),
+                            onTap: () {
+                              AdaptiveTheme.of(context).setLight();
+                              _saveTheme('light');
+                              Navigator.pop(context);
+                            },
+                          ),
+                          ListTile(
+                            title: const Text("Gelap"),
+                            onTap: () {
+                              AdaptiveTheme.of(context).setDark();
+                              _saveTheme('dark');
+                              Navigator.pop(context);
+                            },
+                          ),
+                          ListTile(
+                            title: const Text("Ikuti Sistem"),
+                            onTap: () {
+                              AdaptiveTheme.of(context).setSystem();
+                              _saveTheme('system');
+                              Navigator.pop(context);
+                            },
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 10),
+                      const Divider(),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 8,
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              "Beri Rating Aplikasi:",
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 15,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            RatingBar.builder(
+                              initialRating: _rating,
+                              minRating: 1,
+                              allowHalfRating: true,
+                              itemCount: 5,
+                              itemSize: 32,
+                              unratedColor: Colors.grey.shade300,
+                              itemBuilder: (context, _) =>
+                                  const Icon(Icons.star, color: Colors.amber),
+                              onRatingUpdate: (rating) {
+                                setState(() {
+                                  _rating = rating;
+                                });
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text("Rating: $rating")),
+                                );
+                              },
+                            ),
+                            const SizedBox(height: 16),
+                            const Text(
+                              "Terakhir Login:",
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 15,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              _lastLogin != null
+                                  ? "Waktu: $_lastLogin"
+                                  : "Belum pernah login",
+                              style: const TextStyle(
+                                fontSize: 14,
+                                color: Colors.black54,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ],
-            ),
-            const Spacer(),
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    "Beri Rating Aplikasi:",
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 8),
-                  RatingBar.builder(
-                    initialRating: _rating,
-                    minRating: 1,
-                    allowHalfRating: true,
-                    itemCount: 5,
-                    itemSize: 35,
-                    unratedColor: Colors.grey.shade300,
-                    itemBuilder: (context, index) {
-                      return const Icon(Icons.star, color: Colors.amber);
-                    },
-                    onRatingUpdate: (rating) {
-                      setState(() {
-                        _rating = rating;
-                      });
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text("Rating: $rating")),
-                      );
-                    },
-                  ),
-                  const SizedBox(height: 16),
-                  const Text(
-                    "Terakhir Login:",
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    _lastLogin != null
-                        ? "Waktu: $_lastLogin"
-                        : "Belum pernah login",
-                    style: const TextStyle(fontSize: 16),
-                  ),
-                ],
               ),
-            ),
-            ListTile(
-              leading: Icon(
-                Icons.logout,
-                color: Theme.of(context).colorScheme.error,
+
+              // LOGOUT BUTTON
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.redAccent,
+                    minimumSize: const Size(double.infinity, 50),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(15),
+                    ),
+                    elevation: 4,
+                  ),
+                  onPressed: () {
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(builder: (context) => const Login()),
+                    );
+                  },
+                  icon: const Icon(Icons.logout, color: Colors.white),
+                  label: const Text(
+                    "Logout",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                  ),
+                ),
               ),
-              title: Text(
-                "Logout",
-                style: TextStyle(color: Theme.of(context).colorScheme.error),
-              ),
-              onTap: () {
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (context) => const Login()),
-                );
-              },
-            ),
-          ],
+            ],
+          ),
         ),
       ),
+
       body: IndexedStack(index: myIndex, children: pages),
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
