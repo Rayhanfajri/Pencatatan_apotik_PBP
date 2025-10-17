@@ -6,14 +6,14 @@ import 'dashboard.dart';
 import 'regis.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-class Login extends StatefulWidget {
-  const Login({super.key});
+class login extends StatefulWidget {
+  const login({super.key});
 
   @override
-  State<Login> createState() => _LoginState();
+  State<login> createState() => _loginState();
 }
 
-class _LoginState extends State<Login> {
+class _loginState extends State<login> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   bool _isPasswordVisible = false;
@@ -256,10 +256,7 @@ class _LoginState extends State<Login> {
 
           if (success) {
             final prefs = await SharedPreferences.getInstance();
-            await prefs.setString(
-              'logged_in_email',
-              email,
-            ); // simpan user aktif
+            await prefs.setString('logged_in_email', email);
             await saveLastLogin();
 
             if (!mounted) return;

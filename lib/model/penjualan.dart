@@ -1,28 +1,81 @@
 class Penjualan {
+  String kodeObat;
   String namaObat;
-  int jumlah;
+  String namaKategori;
+  int jumlahTerjual;
   String tanggal;
 
   Penjualan({
+    required this.kodeObat,
     required this.namaObat,
-    required this.jumlah,
+    required this.namaKategori,
+    required this.jumlahTerjual,
     required this.tanggal,
   });
-
-  @override
-  String toString() {
-    return "$namaObat ($jumlah) - $tanggal";
-  }
 }
 
 List<Penjualan> penjualanList = [
-  Penjualan(namaObat: "Paracetamol", jumlah: 5, tanggal: "2025-09-01"),
-  Penjualan(namaObat: "Amoxicillin", jumlah: 3, tanggal: "2025-09-02"),
-  Penjualan(namaObat: "Azithromycin", jumlah: 7, tanggal: "2025-09-03"),
-  Penjualan(namaObat: "Vitamin D", jumlah: 10, tanggal: "2025-09-04"),
-  Penjualan(namaObat: "Cetirizine", jumlah: 4, tanggal: "2025-09-05"),
-  Penjualan(namaObat: "Ibuprofen", jumlah: 8, tanggal: "2025-09-08"),
-  Penjualan(namaObat: "Vitamin C", jumlah: 12, tanggal: "2025-09-09"),
-  Penjualan(namaObat: "Multivitamin", jumlah: 10, tanggal: "2025-09-07"),
-  Penjualan(namaObat: "Dexamethasone", jumlah: 3, tanggal: "2025-09-10"),
+  Penjualan(
+    kodeObat: "OB001",
+    namaObat: "Amoxicillin",
+    namaKategori: "Antibiotik",
+    jumlahTerjual: 5,
+    tanggal: "2025-10-01",
+  ),
+  Penjualan(
+    kodeObat: "OB002",
+    namaObat: "Azithromycin",
+    namaKategori: "Antibiotik",
+    jumlahTerjual: 3,
+    tanggal: "2025-10-02",
+  ),
+  Penjualan(
+    kodeObat: "OB003",
+    namaObat: "Dexamethasone",
+    namaKategori: "Antibiotik",
+    jumlahTerjual: 4,
+    tanggal: "2025-10-03",
+  ),
+  Penjualan(
+    kodeObat: "OB004",
+    namaObat: "Vitamin C",
+    namaKategori: "Vitamin",
+    jumlahTerjual: 10,
+    tanggal: "2025-10-04",
+  ),
+  Penjualan(
+    kodeObat: "OB005",
+    namaObat: "Vitamin D",
+    namaKategori: "Vitamin",
+    jumlahTerjual: 8,
+    tanggal: "2025-10-05",
+  ),
+  Penjualan(
+    kodeObat: "OB006",
+    namaObat: "Multivitamin",
+    namaKategori: "Vitamin",
+    jumlahTerjual: 12,
+    tanggal: "2025-10-06",
+  ),
+  Penjualan(
+    kodeObat: "OB007",
+    namaObat: "Paracetamol",
+    namaKategori: "Analgesik",
+    jumlahTerjual: 7,
+    tanggal: "2025-10-07",
+  ),
+  Penjualan(
+    kodeObat: "OB009",
+    namaObat: "Ibuprofen",
+    namaKategori: "Analgesik",
+    jumlahTerjual: 5,
+    tanggal: "2025-10-08",
+  ),
+  Penjualan(
+    kodeObat: "OB010",
+    namaObat: "Cetirizine",
+    namaKategori: "Analgesik",
+    jumlahTerjual: 6,
+    tanggal: "2025-10-09",
+  ),
 ];

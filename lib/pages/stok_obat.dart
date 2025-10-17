@@ -35,6 +35,31 @@ class _StokObatState extends State<StokObat> {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+
+    int crossAxisCount;
+    double fontSizeNama;
+    double fontSizeHarga;
+    double avatarSize;
+
+    // 🔹 Responsif berdasarkan lebar layar
+    if (screenWidth < 600) {
+      crossAxisCount = 2;
+      fontSizeNama = 14;
+      fontSizeHarga = 13;
+      avatarSize = 45;
+    } else if (screenWidth < 1000) {
+      crossAxisCount = 3;
+      fontSizeNama = 16;
+      fontSizeHarga = 15;
+      avatarSize = 55;
+    } else {
+      crossAxisCount = 4;
+      fontSizeNama = 18;
+      fontSizeHarga = 16;
+      avatarSize = 65;
+    }
+
     List<Obat> filteredList = _stok
         .where(
           (obat) => obat.namaObat.toLowerCase().contains(
@@ -63,7 +88,7 @@ class _StokObatState extends State<StokObat> {
       ),
       child: Column(
         children: [
-          // 🔍 Search dan sorting
+          // 🔹 Search + Filter
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             child: Row(
@@ -107,9 +132,7 @@ class _StokObatState extends State<StokObat> {
                   ],
                   onChanged: (val) {
                     if (val != null) {
-                      setState(() {
-                        selectedSort = val;
-                      });
+                      setState(() => selectedSort = val);
                     }
                   },
                 ),
@@ -117,72 +140,84 @@ class _StokObatState extends State<StokObat> {
             ),
           ),
 
-          // 🧱 Grid stok obat
+          // 🔹 Grid produk responsif
           Expanded(
-            child: GridView.builder(
-              padding: const EdgeInsets.all(12),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 4,
-                childAspectRatio: 1.1,
-                crossAxisSpacing: 8,
-                mainAxisSpacing: 8,
-              ),
-              itemCount: filteredList.length,
-              itemBuilder: (context, index) {
-                final obat = filteredList[index];
-                return GestureDetector(
-                  onTap: () => _showDetailBottomSheet(context, index, obat),
-                  child: GFCard(
-                    color: Colors.white,
-                    elevation: 2,
-                    borderRadius: BorderRadius.circular(12),
-                    padding: const EdgeInsets.all(10),
-                    content: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        GFAvatar(
-                          backgroundImage: AssetImage(obat.foto),
-                          shape: GFAvatarShape.circle,
-                          size: 48,
-                        ),
-                        const SizedBox(height: 3),
-                        Text(
-                          obat.namaObat,
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 18,
-                            color: Colors.teal,
-                          ),
-                          textAlign: TextAlign.center,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          "Rp ${obat.harga.toStringAsFixed(0)}",
-                          style: const TextStyle(
-                            fontSize: 16,
-                            color: Colors.green,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          "Stok: ${obat.stok}",
-                          style: const TextStyle(
-                            fontSize: 15,
-                            color: Colors.black54,
-                          ),
-                        ),
-                      ],
-                    ),
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                return GridView.builder(
+                  padding: const EdgeInsets.all(12),
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: crossAxisCount,
+                    childAspectRatio: constraints.maxWidth < 400
+                        ? 0.85
+                        : constraints.maxWidth < 800
+                        ? 1.0
+                        : 1.1,
+                    crossAxisSpacing: 10,
+                    mainAxisSpacing: 10,
                   ),
+                  itemCount: filteredList.length,
+                  itemBuilder: (context, index) {
+                    final obat = filteredList[index];
+                    final fotoPath = (obat.foto.isNotEmpty)
+                        ? obat.foto
+                        : 'assets/images/default.png';
+
+                    return GestureDetector(
+                      onTap: () => _showDetailBottomSheet(context, index, obat),
+                      child: GFCard(
+                        color: Colors.white,
+                        elevation: 3,
+                        borderRadius: BorderRadius.circular(12),
+                        padding: const EdgeInsets.all(10),
+                        content: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            GFAvatar(
+                              backgroundImage: AssetImage(fotoPath),
+                              shape: GFAvatarShape.circle,
+                              size: avatarSize,
+                            ),
+                            const SizedBox(height: 6),
+                            Text(
+                              obat.namaObat,
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: fontSizeNama,
+                                color: Colors.teal,
+                              ),
+                              textAlign: TextAlign.center,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              "Rp ${obat.harga.toStringAsFixed(0)}",
+                              style: TextStyle(
+                                fontSize: fontSizeHarga,
+                                color: Colors.green,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            const SizedBox(height: 3),
+                            Text(
+                              "Stok: ${obat.stok}",
+                              style: TextStyle(
+                                fontSize: fontSizeHarga - 1,
+                                color: Colors.black54,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
                 );
               },
             ),
           ),
 
-          // ➕ Tombol tambah stok
+          // 🔹 Tombol tambah stok
           Padding(
             padding: const EdgeInsets.all(12.0),
             child: GFButton(
@@ -200,7 +235,13 @@ class _StokObatState extends State<StokObat> {
     );
   }
 
+  // ================= DETAIL / EDIT / ADD DIBAWAH INI SAMA PERSIS =================
+
   void _showDetailBottomSheet(BuildContext context, int index, Obat obat) {
+    final fotoPath = (obat.foto.isNotEmpty)
+        ? obat.foto
+        : 'assets/images/default.png';
+
     showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
@@ -213,7 +254,7 @@ class _StokObatState extends State<StokObat> {
             mainAxisSize: MainAxisSize.min,
             children: [
               GFAvatar(
-                backgroundImage: AssetImage(obat.foto),
+                backgroundImage: AssetImage(fotoPath),
                 shape: GFAvatarShape.circle,
                 size: 80,
               ),
@@ -268,7 +309,6 @@ class _StokObatState extends State<StokObat> {
     final stokController = TextEditingController(text: obat.stok.toString());
     final hargaController = TextEditingController(text: obat.harga.toString());
 
-    // ✅ Amanin null value
     KategoriObat? selectedKategori = kategoriList.isNotEmpty
         ? kategoriList.firstWhere(
             (kat) => kat.idKategori == obat.idKategori,
@@ -350,7 +390,6 @@ class _StokObatState extends State<StokObat> {
     final stokController = TextEditingController();
     final hargaController = TextEditingController();
 
-    // ✅ Amanin kategoriList kosong
     KategoriObat? selectedKategori = kategoriList.isNotEmpty
         ? kategoriList.first
         : null;

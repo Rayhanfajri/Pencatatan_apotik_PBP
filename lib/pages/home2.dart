@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-//import 'login.dart'
 
 class Dashboard extends StatelessWidget {
   final String email;

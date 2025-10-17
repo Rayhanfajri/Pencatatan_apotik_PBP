@@ -24,6 +24,12 @@ class MyApp extends StatelessWidget {
           backgroundColor: Colors.teal,
           foregroundColor: Colors.white,
         ),
+        pageTransitionsTheme: const PageTransitionsTheme(
+          builders: {
+            TargetPlatform.android: FadeUpwardsPageTransitionsBuilder(),
+            TargetPlatform.iOS: FadeUpwardsPageTransitionsBuilder(),
+          },
+        ),
       ),
       dark: ThemeData(
         brightness: Brightness.dark,
@@ -32,6 +38,12 @@ class MyApp extends StatelessWidget {
         appBarTheme: const AppBarTheme(
           backgroundColor: Colors.black,
           foregroundColor: Colors.white,
+        ),
+        pageTransitionsTheme: const PageTransitionsTheme(
+          builders: {
+            TargetPlatform.android: FadeUpwardsPageTransitionsBuilder(),
+            TargetPlatform.iOS: FadeUpwardsPageTransitionsBuilder(),
+          },
         ),
       ),
       initial: savedThemeMode ?? AdaptiveThemeMode.light,

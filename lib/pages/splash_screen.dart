@@ -19,7 +19,7 @@ class _SplashScreenState extends State<SplashScreen> {
     await Future.delayed(const Duration(seconds: 3));
     Navigator.pushReplacement(
       context,
-      MaterialPageRoute(builder: (context) => const Login()),
+      MaterialPageRoute(builder: (context) => const login()),
     );
   }
 
@@ -30,11 +30,10 @@ class _SplashScreenState extends State<SplashScreen> {
         final width = constraints.maxWidth;
         final height = constraints.maxHeight;
 
-        // Batas maksimal skala agar tampilan tidak terlalu besar
         double scale(double size) {
           double baseScale = width / 400;
-          if (baseScale > 1.5) baseScale = 1.5; // max scale
-          if (baseScale < 0.7) baseScale = 0.7; // min scale
+          if (baseScale > 1.5) baseScale = 1.5;
+          if (baseScale < 0.7) baseScale = 0.7;
           return size * baseScale;
         }
 
@@ -52,13 +51,11 @@ class _SplashScreenState extends State<SplashScreen> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // Logo
                 Image.asset('assets/images/logo.png', height: scale(100)),
                 SizedBox(height: scale(20)),
 
-                // Judul
                 Text(
-                  "Pencatatan Apotik",
+                  "Pencacatan Apotik",
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: scale(26),
@@ -69,7 +66,6 @@ class _SplashScreenState extends State<SplashScreen> {
 
                 SizedBox(height: scale(15)),
 
-                // Loading
                 SizedBox(
                   width: scale(35),
                   height: scale(35),
@@ -81,7 +77,6 @@ class _SplashScreenState extends State<SplashScreen> {
 
                 SizedBox(height: scale(15)),
 
-                // Credit
                 Text(
                   "by Rayhan Fajri A",
                   style: TextStyle(

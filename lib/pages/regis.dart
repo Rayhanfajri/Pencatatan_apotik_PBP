@@ -280,7 +280,7 @@ class _RegisState extends State<Regis> {
             if (!mounted) return;
             Navigator.pushReplacement(
               context,
-              MaterialPageRoute(builder: (_) => const Login()),
+              MaterialPageRoute(builder: (_) => const login()),
             );
           } catch (e) {
             debugPrint("❌ Error saat registrasi: $e");
@@ -319,7 +319,7 @@ class _RegisState extends State<Regis> {
       onTap: () {
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (_) => const Login()),
+          MaterialPageRoute(builder: (_) => const login()),
         );
       },
       child: Text(
