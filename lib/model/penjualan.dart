@@ -1,17 +1,44 @@
 class Penjualan {
-  String kodeObat;
-  String namaObat;
-  String namaKategori;
-  int jumlahTerjual;
-  String tanggal;
+  String _kodeObat;
+  String _namaObat;
+  String _namaKategori;
+  int _jumlahTerjual;
+  String _tanggal;
 
   Penjualan({
-    required this.kodeObat,
-    required this.namaObat,
-    required this.namaKategori,
-    required this.jumlahTerjual,
-    required this.tanggal,
-  });
+    required String kodeObat,
+    required String namaObat,
+    required String namaKategori,
+    required int jumlahTerjual,
+    required String tanggal,
+  }) : _kodeObat = kodeObat,
+       _namaObat = namaObat,
+       _namaKategori = namaKategori,
+       _jumlahTerjual = jumlahTerjual,
+       _tanggal = tanggal;
+
+  // Getter & Setter
+  String get kodeObat => _kodeObat;
+  set kodeObat(String value) => _kodeObat = value;
+
+  String get namaObat => _namaObat;
+  set namaObat(String value) => _namaObat = value;
+
+  String get namaKategori => _namaKategori;
+  set namaKategori(String value) => _namaKategori = value;
+
+  int get jumlahTerjual => _jumlahTerjual;
+  set jumlahTerjual(int value) => _jumlahTerjual = value;
+
+  String get tanggal => _tanggal;
+  set tanggal(String value) => _tanggal = value;
+
+  // Polymorphism
+  void tampilkanInfo() {
+    print(
+      "Penjualan Obat: $_namaObat ($_namaKategori) | Jumlah Terjual: $_jumlahTerjual | Tanggal: $_tanggal",
+    );
+  }
 }
 
 List<Penjualan> penjualanList = [

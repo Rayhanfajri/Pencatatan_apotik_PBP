@@ -5,6 +5,7 @@ class KategoriObat {
 
   KategoriObat(this._idKategori, this._namaKategori, this._deskripsi);
 
+  // Getter & Setter
   String get idKategori => _idKategori;
   set idKategori(String value) => _idKategori = value;
 
@@ -14,7 +15,7 @@ class KategoriObat {
   String get deskripsi => _deskripsi;
   set deskripsi(String value) => _deskripsi = value;
 
-  void tampilkanKategori() {
+  void tampilkanInfo() {
     print("[$_idKategori] $_namaKategori → $_deskripsi");
   }
 }

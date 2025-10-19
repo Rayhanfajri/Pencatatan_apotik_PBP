@@ -1,26 +1,45 @@
 import 'kategoriobat.dart';
 
+//inheritance
 class Obat extends KategoriObat {
-  String kodeObat;
-  String namaObat;
-  double harga;
-  int stok;
-  String foto;
+  String _kodeObat;
+  String _namaObat;
+  double _harga;
+  int _stok;
+  String _foto;
 
   Obat(
     String idKategori,
     String namaKategori,
     String deskripsi,
-    this.kodeObat,
-    this.namaObat,
-    this.harga,
-    this.stok,
-    this.foto,
+    this._kodeObat,
+    this._namaObat,
+    this._harga,
+    this._stok,
+    this._foto,
   ) : super(idKategori, namaKategori, deskripsi);
 
+  // Getter & Setter
+  String get kodeObat => _kodeObat;
+  set kodeObat(String value) => _kodeObat = value;
+
+  String get namaObat => _namaObat;
+  set namaObat(String value) => _namaObat = value;
+
+  double get harga => _harga;
+  set harga(double value) => _harga = value;
+
+  int get stok => _stok;
+  set stok(int value) => _stok = value;
+
+  String get foto => _foto;
+  set foto(String value) => _foto = value;
+
+  // Polymorphism
+  @override
   void tampilkanInfo() {
     print(
-      "Obat [$kodeObat] $namaObat | Harga: $harga | Stok: $stok | Kategori: $namaKategori | Foto: $foto",
+      "Obat [$_kodeObat] $_namaObat | Harga: $_harga | Stok: $_stok | Kategori: $namaKategori | Foto: $_foto",
     );
   }
 }
@@ -86,7 +105,6 @@ List<Obat> stokObatList = [
     30,
     "assets/images/Multivitamin.jpg",
   ),
-
   Obat(
     kategoriList[2].idKategori,
     kategoriList[2].namaKategori,

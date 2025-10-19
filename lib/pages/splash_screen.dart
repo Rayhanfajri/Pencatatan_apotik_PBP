@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'login.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -55,7 +56,7 @@ class _SplashScreenState extends State<SplashScreen> {
                 SizedBox(height: scale(20)),
 
                 Text(
-                  "Pencacatan Apotik",
+                  "Pencatatan Apotik",
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: scale(26),
@@ -64,18 +65,11 @@ class _SplashScreenState extends State<SplashScreen> {
                   ),
                 ),
 
-                SizedBox(height: scale(15)),
+                SizedBox(height: scale(25)),
 
-                SizedBox(
-                  width: scale(35),
-                  height: scale(35),
-                  child: const CircularProgressIndicator(
-                    color: Colors.white,
-                    strokeWidth: 3,
-                  ),
-                ),
+                SpinKitWave(color: Colors.white, size: scale(50)),
 
-                SizedBox(height: scale(15)),
+                SizedBox(height: scale(25)),
 
                 Text(
                   "by Rayhan Fajri A",
